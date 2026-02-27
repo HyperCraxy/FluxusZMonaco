@@ -1,73 +1,419 @@
-﻿<!DOCTYPE html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
+
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astralise</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
     <style>
-        html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #0c0c0c; }
-        #container { width: 100%; height: 100%; }
+        :root {
+            --bg-color: #FF0C0C0C;
+            --primary-accent: #4facfe;
+            --text-main: #ffffff;
+            --font-main: 'Outfit', sans-serif;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-main), 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .editor-shell {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            height: 100%;
+        }
+
+        .tabs-bar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            padding: 7px 8px 0 8px;
+        }
+
+        .tabs-container {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+        }
+
+        .tabs-container::-webkit-scrollbar { height: 0px; }
+        .tabs-container { scroll-behavior: smooth; }
+
+        .tab-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 6px;
+            font-size: 11px;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+            width: fit-content;
+            min-width: 0;
+            max-width: 180px;
+            user-select: none;
+        }
+
+        .tab-item:hover {
+            background: rgba(79, 172, 254, 0.08);
+            color: #ccc;
+        }
+
+        .tab-item.active {
+            background: rgba(79, 172, 254, 0.12);
+            border-color: rgba(79, 172, 254, 0.25);
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .tab-name {
+            outline: none;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid transparent;
+            color: inherit;
+            font: inherit;
+            padding: 0;
+            min-width: 20px;
+            max-width: 110px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .tab-name.editing {
+            border-bottom-color: #4facfe;
+            cursor: text;
+            color: #fff;
+            text-overflow: clip;
+        }
+
+        .tab-close {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            opacity: 0.5;
+            flex-shrink: 0;
+            transition: all 0.2s;
+	    margin-left: 2px
+        }
+
+        .tab-close:hover {
+            opacity: 1;
+            background: rgba(79, 172, 254, 0.15);
+            color: #4facfe;
+        }
+
+        .add-tab-btn {
+            background: transparent;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .add-tab-btn:hover {
+            background: rgba(79, 172, 254, 0.08);
+            color: #4facfe;
+        }
+
+        #monaco-editor { flex: 1; width: 100%; }
+
+        .monaco-editor,
+        .monaco-editor .margin,
+        .monaco-editor-background,
+        .monaco-editor .inputarea.ime-input {
+            background-color: transparent !important;
+        }
     </style>
 </head>
+
 <body>
-    <div id="container"></div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.43.0/min/vs/loader.min.js"></script>
+    <div class="editor-shell">
+        <div class="tabs-bar" id="tabs-bar">
+            <div class="tabs-container" id="tabs-container"></div>
+            <button class="add-tab-btn" id="add-tab-btn" title="New Tab">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+            </button>
+        </div>
+        <div id="monaco-editor"></div>
+    </div>
+
     <script>
-        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.43.0/min/vs' }});
-        require(['vs/editor/editor.main'], function() {
+        const STORAGE_KEY = 'Astralise_tabs';
+
+        const persist = () => {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({ tabs, activeTabId }));
+            } catch (e) {}
+        };
+
+        const loadFromStorage = () => {
+            try {
+                const data = localStorage.getItem(STORAGE_KEY);
+                if (data) {
+                    const parsed = JSON.parse(data);
+                    if (parsed.tabs && parsed.tabs.length > 0) return parsed;
+                }
+            } catch (e) {}
+            return null;
+        };
+
+        const stored = loadFromStorage();
+        let tabs = stored ? stored.tabs : [{ id: 'tab-1', name: 'Tab', content: '--Astralise' }];
+        let activeTabId = stored ? stored.activeTabId : 'tab-1';
+
+        if (!tabs.find(t => t.id === activeTabId)) activeTabId = tabs[0].id;
+
+        const renameTab = (id, inputEl) => {
+            inputEl.classList.add('editing');
+            inputEl.contentEditable = 'true';
+            inputEl.focus();
+
+            const range = document.createRange();
+            range.selectNodeContents(inputEl);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+
+            const finish = () => {
+                inputEl.contentEditable = 'false';
+                inputEl.classList.remove('editing');
+                const newName = inputEl.textContent.trim();
+                const tab = tabs.find(t => t.id === id);
+                if (tab) {
+                    tab.name = newName || tab.name;
+                    inputEl.textContent = tab.name;
+                    persist();
+                }
+            };
+
+            inputEl.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); inputEl.blur(); }
+                if (e.key === 'Escape') { inputEl.textContent = tabs.find(t => t.id === id)?.name || ''; inputEl.blur(); }
+                e.stopPropagation();
+            }, { once: false });
+
+            inputEl.addEventListener('blur', finish, { once: true });
+        };
+
+        const updateTabsUI = () => {
+            const container = document.getElementById('tabs-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            tabs.forEach(tab => {
+                const tabEl = document.createElement('div');
+                tabEl.className = `tab-item ${tab.id === activeTabId ? 'active' : ''}`;
+
+                const nameEl = document.createElement('span');
+                nameEl.className = 'tab-name';
+                nameEl.contentEditable = 'false';
+                nameEl.textContent = tab.name;
+                nameEl.title = 'Double-click to rename';
+
+                nameEl.addEventListener('dblclick', (e) => {
+                    e.stopPropagation();
+                    switchTab(tab.id);
+                    renameTab(tab.id, nameEl);
+                });
+
+                const closeEl = document.createElement('div');
+                closeEl.className = 'tab-close';
+                closeEl.title = 'Close tab';
+                closeEl.innerHTML = `
+                    <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="4">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                `;
+
+                tabEl.appendChild(nameEl);
+                tabEl.appendChild(closeEl);
+
+                tabEl.addEventListener('click', () => switchTab(tab.id));
+                closeEl.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    closeTab(tab.id);
+                });
+
+                container.appendChild(tabEl);
+            });
+        };
+
+        const switchTab = (id) => {
+            if (activeTabId === id) return;
+
+            const currentTab = tabs.find(t => t.id === activeTabId);
+            if (currentTab && window.editor) currentTab.content = window.editor.getValue();
+
+            activeTabId = id;
+            const newTab = tabs.find(t => t.id === id);
+            if (newTab && window.editor) window.editor.setValue(newTab.content);
+
+            persist();
+            updateTabsUI();
+        };
+
+        const closeTab = (id) => {
+            if (tabs.length === 1) return;
+
+            const index = tabs.findIndex(t => t.id === id);
+            tabs = tabs.filter(t => t.id !== id);
+
+            if (activeTabId === id) {
+                const nextTab = tabs[index] || tabs[index - 1];
+                activeTabId = nextTab.id;
+                if (window.editor) window.editor.setValue(nextTab.content);
+            }
+
+            persist();
+            updateTabsUI();
+        };
+
+        const addTab = () => {
+            const id = `tab-${Date.now()}`;
+            tabs.push({ id, name: `Tab ${tabs.length + 1}`, content: '' });
+            switchTab(id);
+        };
+
+        document.getElementById('add-tab-btn')?.addEventListener('click', addTab);
+
+        document.getElementById('tabs-container')?.addEventListener('wheel', (e) => {
+            if (e.deltaY !== 0) {
+                e.preventDefault();
+                document.getElementById('tabs-container').scrollLeft += e.deltaY;
+            }
+        }, { passive: false });
+
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' } });
+
+        require(['vs/editor/editor.main'], function () {
             monaco.languages.registerCompletionItemProvider('lua', {
-                provideCompletionItems: function(model, position) {
-                    var suggestions = [
-                        { label: 'game', kind: monaco.languages.CompletionItemKind.Variable, insertText: 'game' },
-                        { label: 'workspace', kind: monaco.languages.CompletionItemKind.Variable, insertText: 'workspace' },
-                        { label: 'script', kind: monaco.languages.CompletionItemKind.Variable, insertText: 'script' },
-                        { label: 'wait', kind: monaco.languages.CompletionItemKind.Function, insertText: 'wait(${1:seconds})', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
-                        { label: 'warn', kind: monaco.languages.CompletionItemKind.Function, insertText: 'warn(${1:message})', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
-                        { label: 'print', kind: monaco.languages.CompletionItemKind.Function, insertText: 'print(${1:message})', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
-                        { label: 'spawn', kind: monaco.languages.CompletionItemKind.Function, insertText: 'spawn(function()\n\t$0\nend)', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
-                        { label: 'delay', kind: monaco.languages.CompletionItemKind.Function, insertText: 'delay(${1:seconds}, function()\n\t$0\nend)', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
-                        { label: 'tick', kind: monaco.languages.CompletionItemKind.Function, insertText: 'tick()' },
-                        { label: 'Enum', kind: monaco.languages.CompletionItemKind.Class, insertText: 'Enum' },
-                        { label: 'Instance', kind: monaco.languages.CompletionItemKind.Class, insertText: 'Instance' },
-                        { label: 'Vector3', kind: monaco.languages.CompletionItemKind.Class, insertText: 'Vector3' },
-                        { label: 'CFrame', kind: monaco.languages.CompletionItemKind.Class, insertText: 'CFrame' },
-                        { label: 'Color3', kind: monaco.languages.CompletionItemKind.Class, insertText: 'Color3' },
-                        { label: 'UDim2', kind: monaco.languages.CompletionItemKind.Class, insertText: 'UDim2' },
-                        { label: 'task', kind: monaco.languages.CompletionItemKind.Module, insertText: 'task' },
-                        { label: 'task.wait', kind: monaco.languages.CompletionItemKind.Function, insertText: 'task.wait(${1:seconds})', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
-                        { label: 'task.spawn', kind: monaco.languages.CompletionItemKind.Function, insertText: 'task.spawn(${1:function})', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
-                        { label: 'task.defer', kind: monaco.languages.CompletionItemKind.Function, insertText: 'task.defer(${1:function})', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
-                        { label: 'task.delay', kind: monaco.languages.CompletionItemKind.Function, insertText: 'task.delay(${1:seconds}, ${2:function})', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
-                        { label: 'HttpGet', kind: monaco.languages.CompletionItemKind.Method, insertText: 'HttpGet("${1:url}")', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
-                        { label: 'GetObjects', kind: monaco.languages.CompletionItemKind.Method, insertText: 'GetObjects("${1:assetId}")', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
-                        { label: 'GetService', kind: monaco.languages.CompletionItemKind.Method, insertText: 'GetService("${1:ServiceName}")', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet }
+                triggerCharacters: ['.', ':'],
+                provideCompletionItems: (model, position) => {
+                    const suggestions = [
+                        ...['and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function', 'if', 'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true', 'until', 'while'].map(k => ({
+                            label: k, kind: monaco.languages.CompletionItemKind.Keyword, insertText: k
+                        })),
+                        ...['game', 'workspace', 'script', 'shared', '_G', 'Enum', 'Instance', 'Vector3', 'CFrame', 'Color3', 'Rect', 'UDim', 'UDim2', 'Ray', 'Region3', 'TweenInfo'].map(g => ({
+                            label: g, kind: monaco.languages.CompletionItemKind.Class, insertText: g
+                        })),
+                        ...['getgenv', 'getrenv', 'getreg', 'getgc', 'getsenv', 'getrawmetatable', 'setrawmetatable', 'hookfunction', 'hookmetamethod', 'newcclosure', 'checkcaller', 'getnamecallmethod', 'isexecutorclosure', 'identifyexecutor', 'getexecutorname', 'fireclickdetector', 'firetouchinterest', 'firesignal', 'getconnections', 'writefile', 'readfile', 'isfile', 'isfolder', 'makefolder', 'listfiles', 'setclipboard', 'rconsoleprint', 'rconsoleinfo', 'rconsolewarn', 'rconsoleerr'].map(e => ({
+                            label: e, kind: monaco.languages.CompletionItemKind.Function, insertText: e + '($1)', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
+                        })),
+                        ...['print', 'warn', 'error', 'assert', 'select', 'type', 'tostring', 'tonumber', 'unpack', 'pcall', 'xpcall', 'delay', 'wait', 'tick', 'time', 'loadstring', 'getfenv', 'setfenv'].map(f => ({
+                            label: f, kind: monaco.languages.CompletionItemKind.Function, insertText: f + '($1)', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
+                        })),
+                        ...['math', 'table', 'string', 'task', 'coroutine', 'debug', 'utf8', 'os', 'bit32'].map(l => ({
+                            label: l, kind: monaco.languages.CompletionItemKind.Module, insertText: l
+                        })),
+                        { label: 'fori', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'for ${1:i} = ${2:1}, ${3:10} do\n\t$0\nend', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Simple for loop' },
+                        { label: 'forp', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'for ${1:i}, ${2:v} in pairs(${3:table}) do\n\t$0\nend', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Pairs loop' },
+                        { label: 'forip', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'for ${1:i}, ${2:v} in ipairs(${3:table}) do\n\t$0\nend', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Ipairs loop' },
+                        { label: 'spawn', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'task.spawn(function()\n\t$0\nend)', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Spawn a new thread' },
+                        { label: 'waitfor', kind: monaco.languages.CompletionItemKind.Snippet, insertText: '${1:parent}:WaitForChild("${2:ChildName}")', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Wait for a child instance' },
+                        { label: 'getservice', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'game:GetService("${1:ServiceName}")', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Get a Roblox service' },
+                        { label: 'remote', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'game:GetService("ReplicatedStorage").${1:RemoteName}:FireServer($0)', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Fire a remote event' },
+                        { label: 'tween', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'game:GetService("TweenService"):Create(${1:object}, TweenInfo.new(${2:1}), {${3:Property} = ${4:Value}}):Play()', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Create and play a tween' },
+                        { label: 'raycast', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'local params = RaycastParams.new()\nparams.FilterType = Enum.RaycastFilterType.Blacklist\nparams.FilterDescendantsInstances = {${1:table}}\n\nlocal result = workspace:Raycast(${2:origin}, ${3:direction}, params)\nif result then\n\t$0\nend', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Roblox Raycast setup' }
                     ];
-                    return { suggestions: suggestions };
+                    return { suggestions };
                 }
             });
 
-            monaco.editor.defineTheme('wave-dark', {
+            monaco.editor.defineTheme('Astralise-theme', {
                 base: 'vs-dark',
                 inherit: true,
-                rules: [],
+                rules: [
+                    { token: 'string', foreground: '4facfe' },
+                    { token: 'string.lua', foreground: '4facfe' },
+                    { token: 'identifier', foreground: 'ffffff' },
+		    { token: 'number', foreground: 'ff4d4d' },
+                ],
                 colors: {
-                    'editor.background': '#0c0c0c',
+                    'editor.background': '#00000000',
+                    'editor.lineHighlightBackground': '#4facfe0a',
+                    'editorLineNumber.foreground': '#444444',
+                    'editorLineNumber.activeForeground': '#4facfe88',
+                    'editorCursor.foreground': '#4facfe',
+                    'minimap.background': '#00000000'
                 }
             });
-            
-            window.editor = monaco.editor.create(document.getElementById('container'), {
-                value: '',
+
+            const activeTab = tabs.find(t => t.id === activeTabId) || tabs[0];
+
+            window.editor = monaco.editor.create(document.getElementById('monaco-editor'), {
+                value: activeTab.content,
                 language: 'lua',
-                theme: 'wave-dark',
+                theme: 'Astralise-theme',
                 automaticLayout: true,
+                fontSize: 11,
+                fontFamily: "'Fira Code', monospace",
                 minimap: { enabled: false },
-                backgroundColor: '#0c0c0c',
-                tabCompletion: "on",
-                suggestOnTriggerCharacters: true,
-                quickSuggestions: true,
-                acceptSuggestionOnEnter: "on"
+                scrollbar: { vertical: 'visible', horizontal: 'visible' },
+                lineNumbersMinChars: 3,
+                renderLineHighlight: 'all',
+                cursorBlinking: 'smooth',
+                cursorSmoothCaretAnimation: "on",
+                smoothScrolling: true,
+                padding: { top: 10, bottom: 10 }
             });
+
+            // Global helpers for WPF interop
+            window.SetText = (text) => {
+                const tab = tabs.find(t => t.id === activeTabId);
+                if (tab) {
+                    window.editor.setValue(text);
+                    tab.content = text;
+                    persist();
+                }
+            };
+
+            window.GetText = () => window.editor.getValue();
+
+            // Autosave on every keystroke
+            window.editor.onDidChangeModelContent(() => {
+                const currentTab = tabs.find(t => t.id === activeTabId);
+                if (currentTab) {
+                    currentTab.content = window.editor.getValue();
+                    persist();
+                }
+            });
+
+            updateTabsUI();
         });
-        function getValue() { return window.editor.getValue(); }
-        function setValue(v) { window.editor.setValue(v); }
-        function setMinimap(enabled) { window.editor.updateOptions({ minimap: { enabled: enabled } }); }
     </script>
 </body>
+
 </html>
