@@ -8,7 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
     <style>
         :root {
-            --bg-color: #FF0C0C0C;
+            --bg-color: #0C0C0C;
             --primary-accent: #4facfe;
             --text-main: #ffffff;
             --font-main: 'Outfit', sans-serif;
@@ -190,7 +190,7 @@
         };
 
         const stored = loadFromStorage();
-        let tabs = stored ? stored.tabs : [{ id: 'tab-1', name: 'Tab', content: '--Astralise' }];
+        let tabs = stored ? stored.tabs : [{ id: 'tab-1', name: 'Tab', content: '--FluxusZ' }];
         let activeTabId = stored ? stored.activeTabId : 'tab-1';
 
         if (!tabs.find(t => t.id === activeTabId)) activeTabId = tabs[0].id;
@@ -417,3 +417,4 @@
 </body>
 
 </html>
+
