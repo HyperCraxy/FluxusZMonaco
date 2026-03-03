@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FluxusZ</title>
+    <title>Astralise</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
     <style>
         :root {
@@ -177,7 +177,120 @@
             color: #4facfe;
         }
 
-        #monaco-editor { flex: 1; width: 100%; }
+        #monaco-editor { flex: 1; width: 100%; min-height: 0; }
+
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 22px;
+            padding: 0 10px;
+            background: rgba(4, 10, 18, 0.95);
+            border-top: 1px solid rgba(255,255,255,0.04);
+            flex-shrink: 0;
+            font-size: 10.5px;
+            font-family: 'Fira Code', monospace;
+            color: rgba(255,255,255,0.35);
+            user-select: none;
+        }
+
+        .status-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .status-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .status-lang {
+            display: flex;
+            align-items: center;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 0.02em;
+        }
+
+        .status-divider {
+            width: 1px;
+            height: 10px;
+            background: rgba(255,255,255,0.1);
+        }
+
+        #status-pos {
+            color: rgba(255,255,255,0.35);
+            letter-spacing: 0.02em;
+        }
+
+        .status-diag-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0 6px;
+            height: 16px;
+            border-radius: 3px;
+            font-size: 10px;
+            letter-spacing: 0.01em;
+            cursor: default;
+            transition: background 0.15s;
+        }
+
+        .status-diag-item:hover { background: rgba(255,255,255,0.06); }
+
+        .status-diag-item.errors {
+            color: #f87171;
+        }
+
+        .status-diag-item.warnings {
+            color: #fbbf24;
+        }
+
+        .status-diag-item.errors.zero,
+        .status-diag-item.warnings.zero {
+            color: rgba(255,255,255,0.25);
+        }
+
+        .status-btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.3);
+            font-family: 'Fira Code', monospace;
+            font-size: 10.5px;
+            cursor: pointer;
+            padding: 0 6px;
+            height: 18px;
+            border-radius: 3px;
+            letter-spacing: 0.02em;
+            transition: background 0.15s, color 0.15s;
+            white-space: nowrap;
+        }
+
+        .status-btn:hover {
+            background: rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.6);
+        }
+
+        .status-btn.active {
+            color: #4facfe;
+        }
+
+        .status-btn.active svg {
+            opacity: 1;
+        }
+
+        .status-btn-divider {
+            width: 1px;
+            height: 10px;
+            background: rgba(255,255,255,0.07);
+            flex-shrink: 0;
+        }
 
         .monaco-editor,
         .monaco-editor .margin,
@@ -200,10 +313,82 @@
             </button>
         </div>
         <div id="monaco-editor"></div>
+        <div class="status-bar" id="status-bar">
+            <div class="status-left">
+                <button class="status-btn" id="minimap-btn" title="Toggle Minimap">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="0.75" y="0.75" width="6.5" height="10.5" rx="1" stroke="currentColor" stroke-width="1.2"/>
+                        <rect x="9" y="0.75" width="2.25" height="10.5" rx="0.75" stroke="currentColor" stroke-width="1.2"/>
+                        <line x1="2.5" y1="3" x2="5.5" y2="3" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+                        <line x1="2.5" y1="5" x2="5.5" y2="5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+                        <line x1="2.5" y1="7" x2="4.5" y2="7" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+                    </svg>
+                    Minimap
+                </button>
+                <span class="status-btn-divider"></span>
+                <button class="status-btn" id="wrap-btn" title="Toggle Word Wrap">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <line x1="1" y1="3" x2="11" y2="3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                        <path d="M1 6h7a2 2 0 0 1 0 4H6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <polyline points="4,8 6,10 4,12" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" transform="translate(0,-2)"/>
+                    </svg>
+                    Wrap
+                </button>
+                <span class="status-btn-divider"></span>
+                <button class="status-btn" id="linenum-btn" title="Toggle Line Numbers">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <line x1="5" y1="2.5" x2="11" y2="2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                        <line x1="5" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                        <line x1="5" y1="9.5" x2="11" y2="9.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                        <text x="1" y="3.8" fill="currentColor" font-size="3.5" font-family="monospace">1</text>
+                        <text x="1" y="7.3" fill="currentColor" font-size="3.5" font-family="monospace">2</text>
+                        <text x="1" y="10.8" fill="currentColor" font-size="3.5" font-family="monospace">3</text>
+                    </svg>
+                    Nums
+                </button>
+                <span class="status-btn-divider"></span>
+                <button class="status-btn" id="format-btn" title="Format / Auto-indent Document">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <line x1="1" y1="2.5" x2="11" y2="2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                        <line x1="3" y1="5.5" x2="11" y2="5.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                        <line x1="1" y1="8.5" x2="8"  y2="8.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                        <polyline points="1,5 2.2,6.2 1,7.4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Format
+                </button>
+                <span class="status-btn-divider"></span>
+                <button class="status-btn" id="whitespace-btn" title="Toggle Render Whitespace">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="3"  cy="6" r="0.9" fill="currentColor"/>
+                        <circle cx="6"  cy="6" r="0.9" fill="currentColor"/>
+                        <circle cx="9"  cy="6" r="0.9" fill="currentColor"/>
+                        <path d="M2 9.5 L6 9.5 L6 8 L10 10 L6 12 L6 10.5 L2 10.5 Z" fill="currentColor" opacity="0.5" transform="scale(0.7) translate(1.5, -4.5)"/>
+                    </svg>
+                    Spaces
+                </button>
+                <span class="status-btn-divider"></span>
+                <button class="status-btn" id="fontdec-btn" title="Decrease Font Size">
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="2" y1="5" x2="8" y2="5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                </button>
+                <span id="font-size-label" style="font-size:10.5px;color:rgba(255,255,255,0.3);min-width:20px;text-align:center;font-family:'Fira Code',monospace;">11</span>
+                <button class="status-btn" id="fontinc-btn" title="Increase Font Size">
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="2" x2="5" y2="8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><line x1="2" y1="5" x2="8" y2="5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                </button>
+            </div>
+            <div class="status-right">
+                <span class="status-lang">
+                    <svg width="9" height="9" viewBox="0 0 9 9" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="opacity:0.5;margin-right:4px"><path d="M7.375 0C7.80598 0 8.2193 0.171205 8.52405 0.475951C8.8288 0.780698 9 1.19402 9 1.625V5H6.625C6.19402 5 5.7807 5.17121 5.47595 5.47595C5.17121 5.7807 5 6.19402 5 6.625V9H1.625C1.19402 9 0.780698 8.8288 0.475951 8.52405C0.171205 8.2193 0 7.80598 0 7.375V1.625C0 1.19402 0.171205 0.780698 0.475951 0.475951C0.780698 0.171205 1.19402 0 1.625 0H7.375ZM8.78 5.75L5.75 8.78V6.625C5.75 6.142 6.142 5.75 6.625 5.75H8.78Z"/></svg>Lua
+                </span>
+                <span class="status-divider"></span>
+                <span id="status-diagnostics" style="display:flex;align-items:center;gap:6px;"></span>
+                <span class="status-divider" id="status-diag-divider"></span>
+                <span id="status-pos">Ln 1, Col 1</span>
+            </div>
+        </div>
     </div>
 
     <script>
-        const STORAGE_KEY = 'FluxusZ_tabs';
+        const STORAGE_KEY = 'Astralise_tabs';
 
         const persist = () => {
             try {
@@ -367,6 +552,7 @@
                         ...['game', 'workspace', 'script', 'shared', '_G', 'Enum', 'Instance', 'Vector3', 'CFrame', 'Color3', 'Rect', 'UDim', 'UDim2', 'Ray', 'Region3', 'TweenInfo'].map(g => ({
                             label: g, kind: monaco.languages.CompletionItemKind.Class, insertText: g
                         })),
+                        // Fluxusz env functions from Init.lua
                         ...[
                             // Identity / executor info
                             { label: 'identifyexecutor',    sig: 'identifyexecutor()',              doc: 'Returns the executor name and version string.' },
@@ -375,18 +561,21 @@
                             { label: 'checkclosure',        sig: 'checkclosure(func)',              doc: 'Alias for isourclosure(func).' },
                             { label: 'isourclosure',        sig: 'isourclosure(func)',              doc: 'Returns true if func was defined in the executor environment.' },
                             { label: 'isexecutorclosure',   sig: 'isexecutorclosure(func)',         doc: 'Alias for isourclosure(func).' },
+                            // Environment
                             { label: 'getgenv',             sig: 'getgenv()',                       doc: 'Returns the global executor environment table.' },
                             { label: 'getrenv',             sig: 'getrenv()',                       doc: 'Returns a readonly copy of the Roblox environment.' },
                             { label: 'getmenv',             sig: 'getmenv()',                       doc: 'Returns the Roblox native environment (alias for getrenv()).' },
                             { label: 'getsenv',             sig: 'getsenv(script)',                 doc: 'Returns a sandboxed environment scoped to the given script instance.' },
                             { label: 'getfpscap',           sig: 'getfpscap()',                     doc: 'Returns the current FPS cap as a number.' },
                             { label: 'setfpscap',           sig: 'setfpscap(cap)',                  doc: 'Sets the FPS cap. Pass 0 for unlimited.' },
+                            // Thread identity
                             { label: 'getthreadidentity',   sig: 'getthreadidentity()',             doc: 'Returns the current thread identity level (0–8).' },
                             { label: 'getidentity',         sig: 'getidentity()',                   doc: 'Alias for getthreadidentity().' },
                             { label: 'getthreadcontext',    sig: 'getthreadcontext()',              doc: 'Alias for getthreadidentity().' },
                             { label: 'setthreadidentity',   sig: 'setthreadidentity(id)',           doc: 'Sets the current thread identity level (number 0–8).' },
                             { label: 'setidentity',         sig: 'setidentity(id)',                 doc: 'Alias for setthreadidentity(id).' },
                             { label: 'setthreadcontext',    sig: 'setthreadcontext(id)',            doc: 'Alias for setthreadidentity(id).' },
+                            // Closures
                             { label: 'islclosure',          sig: 'islclosure(func)',                doc: 'Returns true if func is a Lua closure (not C).' },
                             { label: 'isluaclosure',        sig: 'isluaclosure(func)',              doc: 'Alias for islclosure(func).' },
                             { label: 'iscclosure',          sig: 'iscclosure(func)',                doc: 'Returns true if func is a C closure.' },
@@ -394,6 +583,7 @@
                             { label: 'newcclosure',         sig: 'newcclosure(func)',               doc: 'Wraps func in a coroutine-based C-style closure.' },
                             { label: 'clonefunction',       sig: 'clonefunction(func)',             doc: 'Clones func as an lclosure or cclosure depending on its type.' },
                             { label: 'replaceclosure',      sig: 'replaceclosure(func)',            doc: 'Alias for hookfunction.' },
+                            // Instances & references
                             { label: 'cloneref',            sig: 'cloneref(instance)',              doc: 'Creates a proxy userdata for the given Instance.' },
                             { label: 'compareinstances',    sig: 'compareinstances(a, b)',          doc: 'Compares two instances or clonedref proxies for equality.' },
                             { label: 'getinstances',        sig: 'getinstances()',                  doc: 'Returns all tracked Instance proxies.' },
@@ -407,12 +597,14 @@
                             { label: 'getobjects',          sig: 'getobjects(assetId)',             doc: 'Loads a Roblox asset by id or rbxassetid:// URL and returns its children.' },
                             { label: 'getspecialinfo',      sig: 'getspecialinfo(instance)',        doc: 'Returns a table of extended info (mass, bytecode, userId, etc.) for an instance.' },
                             { label: 'typeof',              sig: 'typeof(value)',                   doc: 'Returns the type of value, resolving proxy userdata to "Instance".' },
+                            // Hidden properties / scriptability
                             { label: 'gethiddenproperty',   sig: 'gethiddenproperty(obj, prop)',    doc: 'Reads a non-scriptable property from obj.' },
                             { label: 'gethiddenprop',       sig: 'gethiddenprop(obj, prop)',        doc: 'Alias for gethiddenproperty.' },
                             { label: 'sethiddenproperty',   sig: 'sethiddenproperty(obj, prop, val)', doc: 'Sets a non-scriptable property on obj.' },
                             { label: 'sethiddenprop',       sig: 'sethiddenprop(obj, prop, val)',   doc: 'Alias for sethiddenproperty.' },
                             { label: 'isscriptable',        sig: 'isscriptable(object, property)',  doc: 'Returns true if property is scriptable on object.' },
                             { label: 'setscriptable',       sig: 'setscriptable(obj, prop, val)',   doc: 'Sets the scriptability of a property on obj. Returns new value.' },
+                            // Script bytecode / source
                             { label: 'getscriptbytecode',   sig: 'getscriptbytecode(script)',       doc: 'Returns the raw bytecode string of a script instance.' },
                             { label: 'dumpstring',          sig: 'dumpstring(script)',              doc: 'Alias for getscriptbytecode(script).' },
                             { label: 'getscripthash',       sig: 'getscripthash(script)',           doc: 'Returns a SHA-384 hash of the script\'s bytecode.' },
@@ -424,17 +616,22 @@
                             { label: 'decompile',           sig: 'decompile(script)',               doc: 'Decompiles a script instance and returns the source as a string.' },
                             { label: 'saveinstance',        sig: 'saveinstance(options)',           doc: 'Saves the game instance to a file. options table is optional.' },
                             { label: 'savegame',            sig: 'savegame(options)',               doc: 'Alias for saveinstance(options).' },
+                            // GC / registry
                             { label: 'getreg',              sig: 'getreg()',                        doc: 'Returns the Lua registry table (debug.getregistry or a collected equivalent).' },
                             { label: 'getregistry',         sig: 'getregistry()',                   doc: 'Alias for getreg().' },
                             { label: 'getgc',               sig: 'getgc(includeTables)',            doc: 'Returns garbage-collected functions and userdata. Pass true to include tables.' },
                             { label: 'filtergc',            sig: 'filtergc(typeName, options)',     doc: 'Filters getreg() by type. options: { filter, methodName }.' },
+                            // Connections
                             { label: 'getconnections',      sig: 'getconnections(signal)',          doc: 'Returns a table of connection objects for an RBXScriptSignal.' },
+                            // Readonly tables
                             { label: 'setreadonly',         sig: 'setreadonly(t, bool)',            doc: 'Makes table t readonly (true) or writable (false).' },
                             { label: 'isreadonly',          sig: 'isreadonly(t)',                   doc: 'Returns true if table t is currently readonly.' },
+                            // HTTP / requests
                             { label: 'request',             sig: 'request(options)',                doc: 'Sends an HTTP request. options: { Url, Method, Body, Headers }. Returns response table.' },
                             { label: 'http_request',        sig: 'http_request(options)',           doc: 'Alias for request(options).' },
                             { label: 'HttpGet',             sig: 'HttpGet(url, raw)',               doc: 'Performs a GET request. Pass raw=false to JSON-decode the response.' },
                             { label: 'HttpPost',            sig: 'HttpPost(url, body, contentType)', doc: 'Performs a POST request with body and optional Content-Type.' },
+                            // Filesystem
                             { label: 'writefile',           sig: 'writefile(path, content)',        doc: 'Writes content (string) to a file at path. Blocks dangerous extensions.' },
                             { label: 'readfile',            sig: 'readfile(path)',                  doc: 'Reads and returns the content of a file at path.' },
                             { label: 'appendfile',          sig: 'appendfile(path, content)',       doc: 'Appends content to an existing file.' },
@@ -452,10 +649,12 @@
                             { label: 'dofile',              sig: 'dofile(path)',                    doc: 'Loads and executes a Lua file at path.' },
                             { label: 'getcustomasset',      sig: 'getcustomasset(path)',            doc: 'Returns an rbxassetid:// URL for a local file asset.' },
                             { label: 'getsynasset',         sig: 'getsynasset(path)',               doc: 'Alias for getcustomasset(path).' },
+                            // Clipboard
                             { label: 'setclipboard',        sig: 'setclipboard(text)',              doc: 'Copies text to the system clipboard.' },
                             { label: 'setrbxclipboard',     sig: 'setrbxclipboard(text)',           doc: 'Alias for setclipboard(text).' },
                             { label: 'toclipboard',         sig: 'toclipboard(text)',               doc: 'Alias for setclipboard(text).' },
                             { label: 'getclipboard',        sig: 'getclipboard()',                  doc: 'Returns the current system clipboard text.' },
+                            // Console
                             { label: 'consolecreate',       sig: 'consolecreate(title)',            doc: 'Opens the Fluxusz console window with an optional title.' },
                             { label: 'rconsolecreate',      sig: 'rconsolecreate(title)',           doc: 'Alias for consolecreate(title).' },
                             { label: 'consoledestroy',      sig: 'consoledestroy()',                doc: 'Closes/destroys the console window.' },
@@ -476,6 +675,7 @@
                             { label: 'rconsoleerror',       sig: 'rconsoleerror(...)',              doc: 'Alias for rconsoleerr(...).' },
                             { label: 'consoleinput',        sig: 'consoleinput()',                  doc: 'Waits for and returns a line of input from the console.' },
                             { label: 'rconsoleinput',       sig: 'rconsoleinput()',                 doc: 'Alias for consoleinput().' },
+                            // Input
                             { label: 'keypress',            sig: 'keypress(key)',                   doc: 'Simulates pressing a key. Accepts Enum.KeyCode, VK number, or string.' },
                             { label: 'keyrelease',          sig: 'keyrelease(key)',                 doc: 'Simulates releasing a key.' },
                             { label: 'keyclick',            sig: 'keyclick(key)',                   doc: 'Simulates a full key press+release.' },
@@ -491,14 +691,17 @@
                             { label: 'isrbxactive',         sig: 'isrbxactive()',                   doc: 'Returns true if the Roblox window currently has focus.' },
                             { label: 'isgameactive',        sig: 'isgameactive()',                  doc: 'Alias for isrbxactive().' },
                             { label: 'iswindowactive',      sig: 'iswindowactive()',                doc: 'Alias for isrbxactive().' },
+                            // Fire events
                             { label: 'fireclickdetector',   sig: 'fireclickdetector(part, distance, eventType)', doc: 'Fires a ClickDetector on part. eventType: "MouseClick" | "RightMouseClick" | "MouseHoverEnter" | "MouseHoverLeave".' },
                             { label: 'fireproximityprompt', sig: 'fireproximityprompt(prompt)',     doc: 'Fires a ProximityPrompt by temporarily moving it to the player.' },
                             { label: 'firetouchinterest',   sig: 'firetouchinterest(toTouch, touchWith, on)', doc: 'Simulates a touch event between two parts.' },
                             { label: 'firetouchtransmitter',sig: 'firetouchtransmitter(toTouch, touchWith, on)', doc: 'Alias for firetouchinterest.' },
+                            // Base64 / crypto
                             { label: 'base64encode',        sig: 'base64encode(str)',               doc: 'Encodes a string to Base64.' },
                             { label: 'base64_encode',       sig: 'base64_encode(str)',              doc: 'Alias for base64encode.' },
                             { label: 'base64decode',        sig: 'base64decode(str)',               doc: 'Decodes a Base64 string.' },
                             { label: 'base64_decode',       sig: 'base64_decode(str)',              doc: 'Alias for base64decode.' },
+                            // Misc
                             { label: 'messagebox',          sig: 'messagebox(body, title, flag)',   doc: 'Shows a Win32 MessageBox dialog. Returns the button code pressed.' },
                             { label: 'lz4compress',         sig: 'lz4compress(str)',                doc: 'Compresses a string using LZ4.' },
                             { label: 'lz4decompress',       sig: 'lz4decompress(str, size)',        doc: 'Decompresses an LZ4-compressed string.' },
@@ -554,18 +757,21 @@
                             documentation: { value: '```lua\n' + e.sig + '\n```\n' + e.doc },
                             detail: e.sig,
                         })),
+                        // WebSocket
                         { label: 'WebSocket.connect',
                           kind: monaco.languages.CompletionItemKind.Function,
                           insertText: 'WebSocket.connect($1)',
                           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
                           documentation: { value: '```lua\nWebSocket.connect(url)\n```\nOpens a WebSocket connection. Returns socket with :Send(msg), :Close(), .OnMessage, .OnClose.' },
                           detail: 'WebSocket.connect(url)' },
+                        // http table
                         { label: 'http.request',
                           kind: monaco.languages.CompletionItemKind.Function,
                           insertText: 'http.request($1)',
                           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
                           documentation: { value: '```lua\nhttp.request(options)\n```\nAlias for request(options).' },
                           detail: 'http.request(options)' },
+                        // Drawing (loaded at runtime)
                         { label: 'Drawing',
                           kind: monaco.languages.CompletionItemKind.Class,
                           insertText: 'Drawing',
@@ -585,7 +791,7 @@
                 }
             });
 
-            monaco.editor.defineTheme('FluxusZ-theme', {
+            monaco.editor.defineTheme('Astralise-theme', {
                 base: 'vs-dark',
                 inherit: true,
                 rules: [
@@ -609,7 +815,7 @@
             window.editor = monaco.editor.create(document.getElementById('monaco-editor'), {
                 value: activeTab.content,
                 language: 'lua',
-                theme: 'FluxusZ-theme',
+                theme: 'Astralise-theme',
                 automaticLayout: true,
                 fontSize: 11,
                 fontFamily: "'Fira Code', monospace",
@@ -622,6 +828,8 @@
                 smoothScrolling: true,
                 padding: { top: 10, bottom: 10 }
             });
+
+            // Global helpers for WPF interop
             window.SetText = (text) => {
                 const tab = tabs.find(t => t.id === activeTabId);
                 if (tab) {
@@ -633,6 +841,7 @@
 
             window.GetText = () => window.editor.getValue();
 
+            // Autosave on every keystroke
             window.editor.onDidChangeModelContent(() => {
                 const currentTab = tabs.find(t => t.id === activeTabId);
                 if (currentTab) {
@@ -640,6 +849,280 @@
                     persist();
                 }
             });
+
+            // ── Editor Settings: persist & restore ──
+            const SETTINGS_KEY = 'Astralise_settings';
+            const saveSettings = (patch) => {
+                try {
+                    const current = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+                    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...current, ...patch }));
+                } catch (e) {}
+            };
+            const loadSettings = () => {
+                try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); } catch (e) { return {}; }
+            };
+            const S = loadSettings();
+
+            // ── Minimap ──
+            let minimapEnabled = S.minimap ?? false;
+            const minimapBtn = document.getElementById('minimap-btn');
+            window.editor.updateOptions({ minimap: { enabled: minimapEnabled } });
+            minimapBtn.classList.toggle('active', minimapEnabled);
+            minimapBtn.addEventListener('click', () => {
+                minimapEnabled = !minimapEnabled;
+                window.editor.updateOptions({ minimap: { enabled: minimapEnabled } });
+                minimapBtn.classList.toggle('active', minimapEnabled);
+                saveSettings({ minimap: minimapEnabled });
+            });
+
+            // ── Word Wrap ──
+            let wrapEnabled = S.wrap ?? false;
+            const wrapBtn = document.getElementById('wrap-btn');
+            window.editor.updateOptions({ wordWrap: wrapEnabled ? 'on' : 'off' });
+            wrapBtn.classList.toggle('active', wrapEnabled);
+            wrapBtn.addEventListener('click', () => {
+                wrapEnabled = !wrapEnabled;
+                window.editor.updateOptions({ wordWrap: wrapEnabled ? 'on' : 'off' });
+                wrapBtn.classList.toggle('active', wrapEnabled);
+                saveSettings({ wrap: wrapEnabled });
+            });
+
+            // ── Line Numbers ──
+            let lineNumsEnabled = S.lineNums ?? true;
+            const lineNumBtn = document.getElementById('linenum-btn');
+            window.editor.updateOptions({ lineNumbers: lineNumsEnabled ? 'on' : 'off' });
+            lineNumBtn.classList.toggle('active', lineNumsEnabled);
+            lineNumBtn.addEventListener('click', () => {
+                lineNumsEnabled = !lineNumsEnabled;
+                window.editor.updateOptions({ lineNumbers: lineNumsEnabled ? 'on' : 'off' });
+                lineNumBtn.classList.toggle('active', lineNumsEnabled);
+                saveSettings({ lineNums: lineNumsEnabled });
+            });
+
+            // ── Format ──
+            const formatBtn = document.getElementById('format-btn');
+            formatBtn.addEventListener('click', () => {
+                window.editor.getAction('editor.action.formatDocument')?.run().catch(() => {
+                    const model = window.editor.getModel();
+                    if (!model) return;
+                    const lastLine = model.getLineCount();
+                    const lastCol  = model.getLineMaxColumn(lastLine);
+                    window.editor.setSelection({ startLineNumber: 1, startColumn: 1, endLineNumber: lastLine, endColumn: lastCol });
+                    window.editor.getAction('editor.action.indentationToSpaces')?.run();
+                    window.editor.setSelection({ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 });
+                });
+                formatBtn.classList.add('active');
+                setTimeout(() => formatBtn.classList.remove('active'), 300);
+            });
+
+            // ── Render Whitespace ──
+            let whitespaceEnabled = S.whitespace ?? false;
+            const whitespaceBtn = document.getElementById('whitespace-btn');
+            window.editor.updateOptions({ renderWhitespace: whitespaceEnabled ? 'all' : 'none' });
+            whitespaceBtn.classList.toggle('active', whitespaceEnabled);
+            whitespaceBtn.addEventListener('click', () => {
+                whitespaceEnabled = !whitespaceEnabled;
+                window.editor.updateOptions({ renderWhitespace: whitespaceEnabled ? 'all' : 'none' });
+                whitespaceBtn.classList.toggle('active', whitespaceEnabled);
+                saveSettings({ whitespace: whitespaceEnabled });
+            });
+
+            // ── Font Size ──
+            let fontSize = S.fontSize ?? 11;
+            const fontSizeLabel = document.getElementById('font-size-label');
+            window.editor.updateOptions({ fontSize });
+            fontSizeLabel.textContent = fontSize;
+            document.getElementById('fontinc-btn').addEventListener('click', () => {
+                if (fontSize >= 24) return;
+                fontSize++;
+                window.editor.updateOptions({ fontSize });
+                fontSizeLabel.textContent = fontSize;
+                saveSettings({ fontSize });
+            });
+            document.getElementById('fontdec-btn').addEventListener('click', () => {
+                if (fontSize <= 8) return;
+                fontSize--;
+                window.editor.updateOptions({ fontSize });
+                fontSizeLabel.textContent = fontSize;
+                saveSettings({ fontSize });
+            });
+            const statusPos = document.getElementById('status-pos');
+            const statusDiag = document.getElementById('status-diagnostics');
+
+            const updatePos = () => {
+                const pos = window.editor.getPosition();
+                if (pos) statusPos.textContent = `Ln ${pos.lineNumber}, Col ${pos.column}`;
+            };
+
+            const updateDiagnostics = () => {
+                const model = window.editor.getModel();
+                if (!model) return;
+                const markers = monaco.editor.getModelMarkers({ resource: model.uri });
+                let errors = 0, warnings = 0;
+                markers.forEach(m => {
+                    if (m.severity === monaco.MarkerSeverity.Error) errors++;
+                    else if (m.severity === monaco.MarkerSeverity.Warning) warnings++;
+                });
+                const diagEl = document.getElementById('status-diagnostics');
+                const diagDivider = document.getElementById('status-diag-divider');
+                const errClass = errors > 0 ? 'errors' : 'errors zero';
+                const warnClass = warnings > 0 ? 'warnings' : 'warnings zero';
+                const html =
+                    `<span class="status-diag-item ${errClass}" title="${errors} error${errors !== 1 ? 's' : ''}">
+                        <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.8"/><line x1="8" y1="4.5" x2="8" y2="9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="8" cy="11.5" r="0.9" fill="currentColor"/></svg>
+                        ${errors}
+                    </span>` +
+                    `<span class="status-diag-item ${warnClass}" title="${warnings} warning${warnings !== 1 ? 's' : ''}">
+                        <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2L15 14H1L8 2Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><line x1="8" y1="7" x2="8" y2="10.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="8" cy="12.5" r="0.9" fill="currentColor"/></svg>
+                        ${warnings}
+                    </span>`;
+                diagEl.innerHTML = html;
+                diagDivider.style.display = '';
+            };
+
+            window.editor.onDidChangeCursorPosition(updatePos);
+            updatePos();
+
+            // Lua linter — runs 400ms after last keystroke
+            const luaLint = () => {
+                const model = window.editor.getModel();
+                if (!model) return;
+                const code = model.getValue();
+                const lines = code.split('\n');
+                const markers = [];
+
+                // Track block depth for unmatched end detection
+                const blockStack = [];
+                const blockOpeners = ['do', 'then', 'function', 'repeat'];
+                const blockKeywordRe = /\b(function|if|for|while|repeat|do|then|end|until|else|elseif)\b/g;
+
+                lines.forEach((rawLine, li) => {
+                    // Strip single-line comments and string literals for keyword parsing
+                    let line = rawLine
+                        .replace(/--.*$/, '')
+                        .replace(/"(?:[^"\\]|\\.)*"/g, '""')
+                        .replace(/'(?:[^'\\]|\\.)*'/g, "''");
+
+                    // ── Typo / casing warnings for common executor functions ──
+                    const typoMap = {
+                        writFile: 'writefile', readFile: 'readfile', listFile: 'listfiles',
+                        makeFolder: 'makefolder', isFile: 'isfile', isFolder: 'isfolder',
+                        setClipboard: 'setclipboard', getClipboard: 'getclipboard',
+                        loadString: 'loadstring', getScriptBytecode: 'getscriptbytecode',
+                        fireClickDetector: 'fireclickdetector', getInstances: 'getinstances',
+                        getScripts: 'getscripts', getHUI: 'gethui', getGenv: 'getgenv',
+                        getRenv: 'getrenv', checkCaller: 'checkcaller',
+                    };
+                    Object.entries(typoMap).forEach(([typo, correct]) => {
+                        const idx = rawLine.indexOf(typo + '(');
+                        if (idx !== -1) {
+                            markers.push({
+                                severity: monaco.MarkerSeverity.Warning,
+                                message: `'${typo}' is not defined — did you mean '${correct}'?`,
+                                startLineNumber: li + 1, startColumn: idx + 1,
+                                endLineNumber: li + 1, endColumn: idx + typo.length + 1,
+                            });
+                        }
+                    });
+
+                    // ── Assignment inside condition (= instead of ==) ──
+                    if (/^\s*(if|while|elseif)\b/.test(line)) {
+                        const condMatch = line.match(/\b(if|while|elseif)\b(.*)/);
+                        if (condMatch) {
+                            const cond = condMatch[2];
+                            // single = not preceded by <>=!
+                            if (/[^=!<>]=[^=]/.test(cond)) {
+                                markers.push({
+                                    severity: monaco.MarkerSeverity.Warning,
+                                    message: "Possible assignment '=' inside condition — did you mean '=='?",
+                                    startLineNumber: li + 1, startColumn: 1,
+                                    endLineNumber: li + 1, endColumn: rawLine.length + 1,
+                                });
+                            }
+                        }
+                    }
+
+                    // ── Trailing comma before end/until ──
+                    if (/,\s*$/.test(line) && /^\s*(end|until)\b/.test(lines[li + 1] || '')) {
+                        const col = line.trimEnd().length;
+                        markers.push({
+                            severity: monaco.MarkerSeverity.Warning,
+                            message: 'Trailing comma before end/until',
+                            startLineNumber: li + 1, startColumn: col,
+                            endLineNumber: li + 1, endColumn: col + 1,
+                        });
+                    }
+
+                    // ── # on a number literal ──
+                    const hashNum = line.match(/#(\d)/);
+                    if (hashNum) {
+                        const col = line.indexOf('#' + hashNum[1]) + 1;
+                        markers.push({
+                            severity: monaco.MarkerSeverity.Error,
+                            message: "Cannot apply '#' length operator to a number literal",
+                            startLineNumber: li + 1, startColumn: col,
+                            endLineNumber: li + 1, endColumn: col + 2,
+                        });
+                    }
+
+                    // ── Block balance tracking ──
+                    let kw;
+                    blockKeywordRe.lastIndex = 0;
+                    while ((kw = blockKeywordRe.exec(line)) !== null) {
+                        const word = kw[1];
+                        if (word === 'function' || word === 'do' || word === 'repeat') {
+                            blockStack.push({ word, line: li + 1 });
+                        } else if (word === 'if' || word === 'for' || word === 'while') {
+                            blockStack.push({ word, line: li + 1 });
+                        } else if (word === 'then' || word === 'else' || word === 'elseif') {
+                            // part of existing if-block, no push/pop
+                        } else if (word === 'end') {
+                            if (blockStack.length === 0) {
+                                markers.push({
+                                    severity: monaco.MarkerSeverity.Error,
+                                    message: "Unexpected 'end' — no matching block opener",
+                                    startLineNumber: li + 1, startColumn: kw.index + 1,
+                                    endLineNumber: li + 1, endColumn: kw.index + 4,
+                                });
+                            } else {
+                                blockStack.pop();
+                            }
+                        } else if (word === 'until') {
+                            const top = blockStack[blockStack.length - 1];
+                            if (!top || top.word !== 'repeat') {
+                                markers.push({
+                                    severity: monaco.MarkerSeverity.Error,
+                                    message: "Unexpected 'until' — no matching 'repeat'",
+                                    startLineNumber: li + 1, startColumn: kw.index + 1,
+                                    endLineNumber: li + 1, endColumn: kw.index + 6,
+                                });
+                            } else {
+                                blockStack.pop();
+                            }
+                        }
+                    }
+                });
+
+                // Unclosed blocks
+                blockStack.forEach(b => {
+                    markers.push({
+                        severity: monaco.MarkerSeverity.Error,
+                        message: `Unclosed '${b.word}' block — missing 'end'${b.word === 'repeat' ? " or 'until'" : ''}`,
+                        startLineNumber: b.line, startColumn: 1,
+                        endLineNumber: b.line, endColumn: 1,
+                    });
+                });
+
+                monaco.editor.setModelMarkers(model, 'lua-lint', markers);
+                updateDiagnostics();
+            };
+
+            window.editor.onDidChangeModelContent(() => {
+                clearTimeout(window._lintTimer);
+                window._lintTimer = setTimeout(luaLint, 400);
+            });
+            monaco.editor.onDidChangeMarkers(() => updateDiagnostics());
+            luaLint();
 
             updateTabsUI();
         });
