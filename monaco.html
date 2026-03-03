@@ -203,7 +203,7 @@
     </div>
 
     <script>
-        const STORAGE_KEY = 'Astralise_tabs';
+        const STORAGE_KEY = 'FluxusZ_tabs';
 
         const persist = () => {
             try {
@@ -358,7 +358,7 @@
 
         require(['vs/editor/editor.main'], function () {
             monaco.languages.registerCompletionItemProvider('lua', {
-                triggerCharacters: ['.', ':'],
+                triggerCharacters: ['.', ':', ' '],
                 provideCompletionItems: (model, position) => {
                     const suggestions = [
                         ...['and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function', 'if', 'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true', 'until', 'while'].map(k => ({
@@ -367,8 +367,155 @@
                         ...['game', 'workspace', 'script', 'shared', '_G', 'Enum', 'Instance', 'Vector3', 'CFrame', 'Color3', 'Rect', 'UDim', 'UDim2', 'Ray', 'Region3', 'TweenInfo'].map(g => ({
                             label: g, kind: monaco.languages.CompletionItemKind.Class, insertText: g
                         })),
-                        ...['getgenv', 'getrenv', 'getreg', 'getgc', 'getsenv', 'getrawmetatable', 'setrawmetatable', 'hookfunction', 'hookmetamethod', 'newcclosure', 'checkcaller', 'getnamecallmethod', 'isexecutorclosure', 'identifyexecutor', 'getexecutorname', 'fireclickdetector', 'firetouchinterest', 'firesignal', 'getconnections', 'writefile', 'readfile', 'isfile', 'isfolder', 'makefolder', 'listfiles', 'setclipboard', 'rconsoleprint', 'rconsoleinfo', 'rconsolewarn', 'rconsoleerr'].map(e => ({
-                            label: e, kind: monaco.languages.CompletionItemKind.Function, insertText: e + '($1)', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
+                        ...[
+                            // Identity / executor info
+                            { label: 'identifyexecutor',    sig: 'identifyexecutor()',              doc: 'Returns the executor name and version string.' },
+                            { label: 'getexecutorname',     sig: 'getexecutorname()',               doc: 'Alias for identifyexecutor().' },
+                            { label: 'checkcaller',         sig: 'checkcaller()',                   doc: 'Returns true if the calling function is from executor context.' },
+                            { label: 'checkclosure',        sig: 'checkclosure(func)',              doc: 'Alias for isourclosure(func).' },
+                            { label: 'isourclosure',        sig: 'isourclosure(func)',              doc: 'Returns true if func was defined in the executor environment.' },
+                            { label: 'isexecutorclosure',   sig: 'isexecutorclosure(func)',         doc: 'Alias for isourclosure(func).' },
+                            { label: 'getgenv',             sig: 'getgenv()',                       doc: 'Returns the global executor environment table.' },
+                            { label: 'getrenv',             sig: 'getrenv()',                       doc: 'Returns a readonly copy of the Roblox environment.' },
+                            { label: 'getmenv',             sig: 'getmenv()',                       doc: 'Returns the Roblox native environment (alias for getrenv()).' },
+                            { label: 'getsenv',             sig: 'getsenv(script)',                 doc: 'Returns a sandboxed environment scoped to the given script instance.' },
+                            { label: 'getfpscap',           sig: 'getfpscap()',                     doc: 'Returns the current FPS cap as a number.' },
+                            { label: 'setfpscap',           sig: 'setfpscap(cap)',                  doc: 'Sets the FPS cap. Pass 0 for unlimited.' },
+                            { label: 'getthreadidentity',   sig: 'getthreadidentity()',             doc: 'Returns the current thread identity level (0–8).' },
+                            { label: 'getidentity',         sig: 'getidentity()',                   doc: 'Alias for getthreadidentity().' },
+                            { label: 'getthreadcontext',    sig: 'getthreadcontext()',              doc: 'Alias for getthreadidentity().' },
+                            { label: 'setthreadidentity',   sig: 'setthreadidentity(id)',           doc: 'Sets the current thread identity level (number 0–8).' },
+                            { label: 'setidentity',         sig: 'setidentity(id)',                 doc: 'Alias for setthreadidentity(id).' },
+                            { label: 'setthreadcontext',    sig: 'setthreadcontext(id)',            doc: 'Alias for setthreadidentity(id).' },
+                            { label: 'islclosure',          sig: 'islclosure(func)',                doc: 'Returns true if func is a Lua closure (not C).' },
+                            { label: 'isluaclosure',        sig: 'isluaclosure(func)',              doc: 'Alias for islclosure(func).' },
+                            { label: 'iscclosure',          sig: 'iscclosure(func)',                doc: 'Returns true if func is a C closure.' },
+                            { label: 'newlclosure',         sig: 'newlclosure(func)',               doc: 'Wraps func in a new Lua closure and marks it as executor.' },
+                            { label: 'newcclosure',         sig: 'newcclosure(func)',               doc: 'Wraps func in a coroutine-based C-style closure.' },
+                            { label: 'clonefunction',       sig: 'clonefunction(func)',             doc: 'Clones func as an lclosure or cclosure depending on its type.' },
+                            { label: 'replaceclosure',      sig: 'replaceclosure(func)',            doc: 'Alias for hookfunction.' },
+                            { label: 'cloneref',            sig: 'cloneref(instance)',              doc: 'Creates a proxy userdata for the given Instance.' },
+                            { label: 'compareinstances',    sig: 'compareinstances(a, b)',          doc: 'Compares two instances or clonedref proxies for equality.' },
+                            { label: 'getinstances',        sig: 'getinstances()',                  doc: 'Returns all tracked Instance proxies.' },
+                            { label: 'getnilinstances',     sig: 'getnilinstances()',               doc: 'Returns all proxied Instances whose Parent is nil.' },
+                            { label: 'getloadedmodules',    sig: 'getloadedmodules()',              doc: 'Returns all proxied ModuleScript instances.' },
+                            { label: 'getrunningscripts',   sig: 'getrunningscripts()',             doc: 'Returns all proxied ModuleScript instances (running scripts).' },
+                            { label: 'getscripts',          sig: 'getscripts()',                    doc: 'Returns all non-CoreGui LocalScript/ModuleScript/Script proxies.' },
+                            { label: 'gethui',              sig: 'gethui()',                        doc: 'Returns the hidden ScreenGui container used by the executor.' },
+                            { label: 'getcallingscript',    sig: 'getcallingscript()',              doc: 'Returns the script instance that called the current function.' },
+                            { label: 'getcallbackvalue',    sig: 'getcallbackvalue(bindable)',      doc: 'Returns the OnInvoke callback stored for a BindableFunction proxy.' },
+                            { label: 'getobjects',          sig: 'getobjects(assetId)',             doc: 'Loads a Roblox asset by id or rbxassetid:// URL and returns its children.' },
+                            { label: 'getspecialinfo',      sig: 'getspecialinfo(instance)',        doc: 'Returns a table of extended info (mass, bytecode, userId, etc.) for an instance.' },
+                            { label: 'typeof',              sig: 'typeof(value)',                   doc: 'Returns the type of value, resolving proxy userdata to "Instance".' },
+                            { label: 'gethiddenproperty',   sig: 'gethiddenproperty(obj, prop)',    doc: 'Reads a non-scriptable property from obj.' },
+                            { label: 'gethiddenprop',       sig: 'gethiddenprop(obj, prop)',        doc: 'Alias for gethiddenproperty.' },
+                            { label: 'sethiddenproperty',   sig: 'sethiddenproperty(obj, prop, val)', doc: 'Sets a non-scriptable property on obj.' },
+                            { label: 'sethiddenprop',       sig: 'sethiddenprop(obj, prop, val)',   doc: 'Alias for sethiddenproperty.' },
+                            { label: 'isscriptable',        sig: 'isscriptable(object, property)',  doc: 'Returns true if property is scriptable on object.' },
+                            { label: 'setscriptable',       sig: 'setscriptable(obj, prop, val)',   doc: 'Sets the scriptability of a property on obj. Returns new value.' },
+                            { label: 'getscriptbytecode',   sig: 'getscriptbytecode(script)',       doc: 'Returns the raw bytecode string of a script instance.' },
+                            { label: 'dumpstring',          sig: 'dumpstring(script)',              doc: 'Alias for getscriptbytecode(script).' },
+                            { label: 'getscripthash',       sig: 'getscripthash(script)',           doc: 'Returns a SHA-384 hash of the script\'s bytecode.' },
+                            { label: 'getscriptsource',     sig: 'getscriptsource(script)',         doc: 'Returns the Source of a script, or its bytecode if not available.' },
+                            { label: 'getscriptfunction',   sig: 'getscriptfunction(script)',       doc: 'Alias for getscriptclosure.' },
+                            { label: 'compile',             sig: 'compile(code, encoded)',          doc: 'Compiles Lua code string to bytecode via the bridge. Pass encoded=true for base64.' },
+                            { label: 'setscriptbytecode',   sig: 'setscriptbytecode(script, bytecode)', doc: 'Sets the bytecode of a script instance.' },
+                            { label: 'loadstring',          sig: 'loadstring(code, chunkname)',     doc: 'Compiles and loads a Lua string, returning a function or nil, err.' },
+                            { label: 'decompile',           sig: 'decompile(script)',               doc: 'Decompiles a script instance and returns the source as a string.' },
+                            { label: 'saveinstance',        sig: 'saveinstance(options)',           doc: 'Saves the game instance to a file. options table is optional.' },
+                            { label: 'savegame',            sig: 'savegame(options)',               doc: 'Alias for saveinstance(options).' },
+                            { label: 'getreg',              sig: 'getreg()',                        doc: 'Returns the Lua registry table (debug.getregistry or a collected equivalent).' },
+                            { label: 'getregistry',         sig: 'getregistry()',                   doc: 'Alias for getreg().' },
+                            { label: 'getgc',               sig: 'getgc(includeTables)',            doc: 'Returns garbage-collected functions and userdata. Pass true to include tables.' },
+                            { label: 'filtergc',            sig: 'filtergc(typeName, options)',     doc: 'Filters getreg() by type. options: { filter, methodName }.' },
+                            { label: 'getconnections',      sig: 'getconnections(signal)',          doc: 'Returns a table of connection objects for an RBXScriptSignal.' },
+                            { label: 'setreadonly',         sig: 'setreadonly(t, bool)',            doc: 'Makes table t readonly (true) or writable (false).' },
+                            { label: 'isreadonly',          sig: 'isreadonly(t)',                   doc: 'Returns true if table t is currently readonly.' },
+                            { label: 'request',             sig: 'request(options)',                doc: 'Sends an HTTP request. options: { Url, Method, Body, Headers }. Returns response table.' },
+                            { label: 'http_request',        sig: 'http_request(options)',           doc: 'Alias for request(options).' },
+                            { label: 'HttpGet',             sig: 'HttpGet(url, raw)',               doc: 'Performs a GET request. Pass raw=false to JSON-decode the response.' },
+                            { label: 'HttpPost',            sig: 'HttpPost(url, body, contentType)', doc: 'Performs a POST request with body and optional Content-Type.' },
+                            { label: 'writefile',           sig: 'writefile(path, content)',        doc: 'Writes content (string) to a file at path. Blocks dangerous extensions.' },
+                            { label: 'readfile',            sig: 'readfile(path)',                  doc: 'Reads and returns the content of a file at path.' },
+                            { label: 'appendfile',          sig: 'appendfile(path, content)',       doc: 'Appends content to an existing file.' },
+                            { label: 'isfile',              sig: 'isfile(path)',                    doc: 'Returns true if a file exists at path.' },
+                            { label: 'isfolder',            sig: 'isfolder(path)',                  doc: 'Returns true if a folder exists at path.' },
+                            { label: 'makefolder',          sig: 'makefolder(path)',                doc: 'Creates a folder at path. Returns true on success.' },
+                            { label: 'delfile',             sig: 'delfile(path)',                   doc: 'Deletes a file at path.' },
+                            { label: 'delfolder',           sig: 'delfolder(path)',                 doc: 'Deletes a folder at path.' },
+                            { label: 'listfiles',           sig: 'listfiles(path)',                 doc: 'Returns a table of file/folder names inside path.' },
+                            { label: 'copyfile',            sig: 'copyfile(src, dst)',              doc: 'Copies a file from src to dst.' },
+                            { label: 'movefile',            sig: 'movefile(src, dst)',              doc: 'Moves/renames a file from src to dst.' },
+                            { label: 'renamefile',          sig: 'renamefile(src, dst)',            doc: 'Alias for movefile(src, dst).' },
+                            { label: 'getfilesize',         sig: 'getfilesize(path)',               doc: 'Returns the byte size of a file at path.' },
+                            { label: 'loadfile',            sig: 'loadfile(path)',                  doc: 'Loads a file as Lua code. Returns func or nil, err.' },
+                            { label: 'dofile',              sig: 'dofile(path)',                    doc: 'Loads and executes a Lua file at path.' },
+                            { label: 'getcustomasset',      sig: 'getcustomasset(path)',            doc: 'Returns an rbxassetid:// URL for a local file asset.' },
+                            { label: 'getsynasset',         sig: 'getsynasset(path)',               doc: 'Alias for getcustomasset(path).' },
+                            { label: 'setclipboard',        sig: 'setclipboard(text)',              doc: 'Copies text to the system clipboard.' },
+                            { label: 'setrbxclipboard',     sig: 'setrbxclipboard(text)',           doc: 'Alias for setclipboard(text).' },
+                            { label: 'toclipboard',         sig: 'toclipboard(text)',               doc: 'Alias for setclipboard(text).' },
+                            { label: 'getclipboard',        sig: 'getclipboard()',                  doc: 'Returns the current system clipboard text.' },
+                            { label: 'consolecreate',       sig: 'consolecreate(title)',            doc: 'Opens the Fluxusz console window with an optional title.' },
+                            { label: 'rconsolecreate',      sig: 'rconsolecreate(title)',           doc: 'Alias for consolecreate(title).' },
+                            { label: 'consoledestroy',      sig: 'consoledestroy()',                doc: 'Closes/destroys the console window.' },
+                            { label: 'rconsoledestroy',     sig: 'rconsoledestroy()',               doc: 'Alias for consoledestroy().' },
+                            { label: 'consoleclear',        sig: 'consoleclear()',                  doc: 'Clears all text from the console window.' },
+                            { label: 'rconsoleclear',       sig: 'rconsoleclear()',                 doc: 'Alias for consoleclear().' },
+                            { label: 'consolename',         sig: 'consolename(name)',               doc: 'Sets the console window title.' },
+                            { label: 'rconsolename',        sig: 'rconsolename(name)',              doc: 'Alias for consolename(name).' },
+                            { label: 'consolesettitle',     sig: 'consolesettitle(name)',           doc: 'Alias for consolename(name).' },
+                            { label: 'rconsolesettitle',    sig: 'rconsolesettitle(name)',          doc: 'Alias for consolename(name).' },
+                            { label: 'consoleprint',        sig: 'consoleprint(...)',               doc: 'Prints plain text to the console.' },
+                            { label: 'rconsoleprint',       sig: 'rconsoleprint(...)',              doc: 'Alias for consoleprint(...).' },
+                            { label: 'consoleinfo',         sig: 'consoleinfo(...)',                doc: 'Prints info-styled text to the console.' },
+                            { label: 'rconsoleinfo',        sig: 'rconsoleinfo(...)',               doc: 'Alias for consoleinfo(...).' },
+                            { label: 'consolewarn',         sig: 'consolewarn(...)',                doc: 'Prints warning-styled text to the console.' },
+                            { label: 'rconsolewarn',        sig: 'rconsolewarn(...)',               doc: 'Alias for consolewarn(...).' },
+                            { label: 'rconsoleerr',         sig: 'rconsoleerr(...)',                doc: 'Prints error-styled text to the console.' },
+                            { label: 'rconsoleerror',       sig: 'rconsoleerror(...)',              doc: 'Alias for rconsoleerr(...).' },
+                            { label: 'consoleinput',        sig: 'consoleinput()',                  doc: 'Waits for and returns a line of input from the console.' },
+                            { label: 'rconsoleinput',       sig: 'rconsoleinput()',                 doc: 'Alias for consoleinput().' },
+                            { label: 'keypress',            sig: 'keypress(key)',                   doc: 'Simulates pressing a key. Accepts Enum.KeyCode, VK number, or string.' },
+                            { label: 'keyrelease',          sig: 'keyrelease(key)',                 doc: 'Simulates releasing a key.' },
+                            { label: 'keyclick',            sig: 'keyclick(key)',                   doc: 'Simulates a full key press+release.' },
+                            { label: 'mouse1click',         sig: 'mouse1click()',                   doc: 'Simulates a left mouse button click.' },
+                            { label: 'mouse2click',         sig: 'mouse2click()',                   doc: 'Simulates a right mouse button click.' },
+                            { label: 'mouse1press',         sig: 'mouse1press()',                   doc: 'Simulates pressing the left mouse button.' },
+                            { label: 'mouse1release',       sig: 'mouse1release()',                 doc: 'Simulates releasing the left mouse button.' },
+                            { label: 'mouse2press',         sig: 'mouse2press()',                   doc: 'Simulates pressing the right mouse button.' },
+                            { label: 'mouse2release',       sig: 'mouse2release()',                 doc: 'Simulates releasing the right mouse button.' },
+                            { label: 'mousemoveabs',        sig: 'mousemoveabs(x, y)',              doc: 'Moves the mouse cursor to absolute screen coordinates.' },
+                            { label: 'mousemoverel',        sig: 'mousemoverel(x, y)',              doc: 'Moves the mouse cursor by a relative offset.' },
+                            { label: 'mousescroll',         sig: 'mousescroll(delta)',              doc: 'Simulates a mouse scroll by delta.' },
+                            { label: 'isrbxactive',         sig: 'isrbxactive()',                   doc: 'Returns true if the Roblox window currently has focus.' },
+                            { label: 'isgameactive',        sig: 'isgameactive()',                  doc: 'Alias for isrbxactive().' },
+                            { label: 'iswindowactive',      sig: 'iswindowactive()',                doc: 'Alias for isrbxactive().' },
+                            { label: 'fireclickdetector',   sig: 'fireclickdetector(part, distance, eventType)', doc: 'Fires a ClickDetector on part. eventType: "MouseClick" | "RightMouseClick" | "MouseHoverEnter" | "MouseHoverLeave".' },
+                            { label: 'fireproximityprompt', sig: 'fireproximityprompt(prompt)',     doc: 'Fires a ProximityPrompt by temporarily moving it to the player.' },
+                            { label: 'firetouchinterest',   sig: 'firetouchinterest(toTouch, touchWith, on)', doc: 'Simulates a touch event between two parts.' },
+                            { label: 'firetouchtransmitter',sig: 'firetouchtransmitter(toTouch, touchWith, on)', doc: 'Alias for firetouchinterest.' },
+                            { label: 'base64encode',        sig: 'base64encode(str)',               doc: 'Encodes a string to Base64.' },
+                            { label: 'base64_encode',       sig: 'base64_encode(str)',              doc: 'Alias for base64encode.' },
+                            { label: 'base64decode',        sig: 'base64decode(str)',               doc: 'Decodes a Base64 string.' },
+                            { label: 'base64_decode',       sig: 'base64_decode(str)',              doc: 'Alias for base64decode.' },
+                            { label: 'messagebox',          sig: 'messagebox(body, title, flag)',   doc: 'Shows a Win32 MessageBox dialog. Returns the button code pressed.' },
+                            { label: 'lz4compress',         sig: 'lz4compress(str)',                doc: 'Compresses a string using LZ4.' },
+                            { label: 'lz4decompress',       sig: 'lz4decompress(str, size)',        doc: 'Decompresses an LZ4-compressed string.' },
+                            { label: 'getpropertychangedsignal', sig: 'getpropertychangedsignal(instance, property)', doc: 'Returns an RBXScriptSignal that fires when property changes on instance.' },
+                            { label: 'setsimulationradius', sig: 'setsimulationradius(radius, maxRadius)', doc: 'Sets the player\'s SimulationRadius and MaximumSimulationRadius.' },
+                            { label: 'getsimulationradius', sig: 'getsimulationradius()',           doc: 'Returns the current SimulationRadius and MaximumSimulationRadius.' },
+                            { label: 'isnetworkowner',      sig: 'isnetworkowner(part)',            doc: 'Returns true if the local player owns network control of part.' },
+                            { label: 'queue_on_teleport',   sig: 'queue_on_teleport(code)',         doc: 'Queues a Lua code string to run after the next teleport.' },
+                            { label: 'queueonteleport',     sig: 'queueonteleport(code)',           doc: 'Alias for queue_on_teleport(code).' },
+                            { label: 'FluxusZExec',         sig: 'FluxusZExec(code)',               doc: 'Compiles and executes a Lua code string in the Fluxusz executor environment.' },
+                        ].map(e => ({
+                            label: e.label,
+                            kind: monaco.languages.CompletionItemKind.Function,
+                            insertText: e.label + '($1)',
+                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                            documentation: { value: '```lua\n' + e.sig + '\n```\n' + e.doc },
+                            detail: e.sig,
                         })),
                         ...['print', 'warn', 'error', 'assert', 'select', 'type', 'tostring', 'tonumber', 'unpack', 'pcall', 'xpcall', 'delay', 'wait', 'tick', 'time', 'loadstring', 'getfenv', 'setfenv'].map(f => ({
                             label: f, kind: monaco.languages.CompletionItemKind.Function, insertText: f + '($1)', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
@@ -376,6 +523,54 @@
                         ...['math', 'table', 'string', 'task', 'coroutine', 'debug', 'utf8', 'os', 'bit32'].map(l => ({
                             label: l, kind: monaco.languages.CompletionItemKind.Module, insertText: l
                         })),
+                        // crypt library members
+                        ...[
+                            { label: 'crypt.base64encode',  sig: 'crypt.base64encode(str)',        doc: 'Encodes str to Base64.' },
+                            { label: 'crypt.base64decode',  sig: 'crypt.base64decode(str)',        doc: 'Decodes a Base64 string.' },
+                            { label: 'crypt.generatekey',   sig: 'crypt.generatekey(len)',         doc: 'Generates a random Base64-encoded key of len characters (default 32).' },
+                            { label: 'crypt.generatebytes', sig: 'crypt.generatebytes(len)',       doc: 'Alias for crypt.generatekey(len).' },
+                            { label: 'crypt.random',        sig: 'crypt.random(len)',              doc: 'Alias for crypt.generatebytes(len).' },
+                            { label: 'crypt.encrypt',       sig: 'crypt.encrypt(data, key)',       doc: 'XOR-encrypts data with key. Returns encrypted string and key.' },
+                            { label: 'crypt.decrypt',       sig: 'crypt.decrypt(data, key)',       doc: 'Alias for crypt.encrypt (XOR is symmetric).' },
+                            { label: 'crypt.hash',          sig: 'crypt.hash(text, algorithm)',    doc: 'Hashes text with the given algorithm (e.g. "sha384", "sha256", "md5").' },
+                        ].map(e => ({
+                            label: e.label,
+                            kind: monaco.languages.CompletionItemKind.Function,
+                            insertText: e.label + '($1)',
+                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                            documentation: { value: '```lua\n' + e.sig + '\n```\n' + e.doc },
+                            detail: e.sig,
+                        })),
+                        // cache library members
+                        ...[
+                            { label: 'cache.iscached',    sig: 'cache.iscached(instance)',          doc: 'Returns true if instance has not been invalidated.' },
+                            { label: 'cache.invalidate',  sig: 'cache.invalidate(instance)',        doc: 'Invalidates an instance and removes it from its parent.' },
+                            { label: 'cache.replace',     sig: 'cache.replace(old, new)',           doc: 'Replaces old with new in the cache and reparents it.' },
+                        ].map(e => ({
+                            label: e.label,
+                            kind: monaco.languages.CompletionItemKind.Function,
+                            insertText: e.label + '($1)',
+                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                            documentation: { value: '```lua\n' + e.sig + '\n```\n' + e.doc },
+                            detail: e.sig,
+                        })),
+                        { label: 'WebSocket.connect',
+                          kind: monaco.languages.CompletionItemKind.Function,
+                          insertText: 'WebSocket.connect($1)',
+                          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                          documentation: { value: '```lua\nWebSocket.connect(url)\n```\nOpens a WebSocket connection. Returns socket with :Send(msg), :Close(), .OnMessage, .OnClose.' },
+                          detail: 'WebSocket.connect(url)' },
+                        { label: 'http.request',
+                          kind: monaco.languages.CompletionItemKind.Function,
+                          insertText: 'http.request($1)',
+                          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                          documentation: { value: '```lua\nhttp.request(options)\n```\nAlias for request(options).' },
+                          detail: 'http.request(options)' },
+                        { label: 'Drawing',
+                          kind: monaco.languages.CompletionItemKind.Class,
+                          insertText: 'Drawing',
+                          documentation: { value: 'The Drawing library loaded by Fluxusz at runtime.' },
+                          detail: 'Drawing' },
                         { label: 'fori', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'for ${1:i} = ${2:1}, ${3:10} do\n\t$0\nend', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Simple for loop' },
                         { label: 'forp', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'for ${1:i}, ${2:v} in pairs(${3:table}) do\n\t$0\nend', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Pairs loop' },
                         { label: 'forip', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'for ${1:i}, ${2:v} in ipairs(${3:table}) do\n\t$0\nend', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Ipairs loop' },
@@ -390,7 +585,7 @@
                 }
             });
 
-            monaco.editor.defineTheme('Astralise-theme', {
+            monaco.editor.defineTheme('FluxusZ-theme', {
                 base: 'vs-dark',
                 inherit: true,
                 rules: [
@@ -414,7 +609,7 @@
             window.editor = monaco.editor.create(document.getElementById('monaco-editor'), {
                 value: activeTab.content,
                 language: 'lua',
-                theme: 'Astralise-theme',
+                theme: 'FluxusZ-theme',
                 automaticLayout: true,
                 fontSize: 11,
                 fontFamily: "'Fira Code', monospace",
@@ -437,6 +632,7 @@
             };
 
             window.GetText = () => window.editor.getValue();
+
             window.editor.onDidChangeModelContent(() => {
                 const currentTab = tabs.find(t => t.id === activeTabId);
                 if (currentTab) {
