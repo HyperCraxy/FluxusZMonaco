@@ -347,16 +347,6 @@
                     Nums
                 </button>
                 <span class="status-btn-divider"></span>
-                <button class="status-btn" id="format-btn" title="Format / Auto-indent Document">
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <line x1="1" y1="2.5" x2="11" y2="2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                        <line x1="3" y1="5.5" x2="11" y2="5.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                        <line x1="1" y1="8.5" x2="8"  y2="8.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                        <polyline points="1,5 2.2,6.2 1,7.4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    Format
-                </button>
-                <span class="status-btn-divider"></span>
                 <button class="status-btn" id="whitespace-btn" title="Toggle Render Whitespace">
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="3"  cy="6" r="0.9" fill="currentColor"/>
@@ -899,22 +889,6 @@
                 saveSettings({ lineNums: lineNumsEnabled });
             });
 
-            // ── Format ──
-            const formatBtn = document.getElementById('format-btn');
-            formatBtn.addEventListener('click', () => {
-                window.editor.getAction('editor.action.formatDocument')?.run().catch(() => {
-                    const model = window.editor.getModel();
-                    if (!model) return;
-                    const lastLine = model.getLineCount();
-                    const lastCol  = model.getLineMaxColumn(lastLine);
-                    window.editor.setSelection({ startLineNumber: 1, startColumn: 1, endLineNumber: lastLine, endColumn: lastCol });
-                    window.editor.getAction('editor.action.indentationToSpaces')?.run();
-                    window.editor.setSelection({ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 });
-                });
-                formatBtn.classList.add('active');
-                setTimeout(() => formatBtn.classList.remove('active'), 300);
-            });
-
             // ── Render Whitespace ──
             let whitespaceEnabled = S.whitespace ?? false;
             const whitespaceBtn = document.getElementById('whitespace-btn');
@@ -991,110 +965,99 @@
                 const lines = code.split('\n');
                 const markers = [];
 
-                // Track block depth for unmatched end detection
-                const blockStack = [];
-                const blockOpeners = ['do', 'then', 'function', 'repeat'];
-                const blockKeywordRe = /\b(function|if|for|while|repeat|do|then|end|until|else|elseif)\b/g;
+                // ── Strip code of strings/comments for safe keyword parsing ──
+                // Returns array of "clean" lines with string/comment content blanked
+                const cleanLines = (() => {
+                    const out = [];
+                    let inLongString = false;
+                    let longClose = '';
+                    for (let i = 0; i < lines.length; i++) {
+                        let raw = lines[i];
+                        let cl  = '';
+                        let j   = 0;
 
-                lines.forEach((rawLine, li) => {
-                    // Strip single-line comments and string literals for keyword parsing
-                    let line = rawLine
-                        .replace(/--.*$/, '')
-                        .replace(/"(?:[^"\\]|\\.)*"/g, '""')
-                        .replace(/'(?:[^'\\]|\\.)*'/g, "''");
-
-                    // ── Typo / casing warnings for common executor functions ──
-                    const typoMap = {
-                        writFile: 'writefile', readFile: 'readfile', listFile: 'listfiles',
-                        makeFolder: 'makefolder', isFile: 'isfile', isFolder: 'isfolder',
-                        setClipboard: 'setclipboard', getClipboard: 'getclipboard',
-                        loadString: 'loadstring', getScriptBytecode: 'getscriptbytecode',
-                        fireClickDetector: 'fireclickdetector', getInstances: 'getinstances',
-                        getScripts: 'getscripts', getHUI: 'gethui', getGenv: 'getgenv',
-                        getRenv: 'getrenv', checkCaller: 'checkcaller',
-                    };
-                    Object.entries(typoMap).forEach(([typo, correct]) => {
-                        const idx = rawLine.indexOf(typo + '(');
-                        if (idx !== -1) {
-                            markers.push({
-                                severity: monaco.MarkerSeverity.Warning,
-                                message: `'${typo}' is not defined — did you mean '${correct}'?`,
-                                startLineNumber: li + 1, startColumn: idx + 1,
-                                endLineNumber: li + 1, endColumn: idx + typo.length + 1,
-                            });
+                        if (inLongString) {
+                            const end = raw.indexOf(longClose);
+                            if (end !== -1) { inLongString = false; j = end + longClose.length; }
+                            else { out.push(''); continue; }
                         }
-                    });
 
-                    // ── Assignment inside condition (= instead of ==) ──
-                    if (/^\s*(if|while|elseif)\b/.test(line)) {
-                        const condMatch = line.match(/\b(if|while|elseif)\b(.*)/);
-                        if (condMatch) {
-                            const cond = condMatch[2];
-                            // single = not preceded by <>=!
-                            if (/[^=!<>]=[^=]/.test(cond)) {
-                                markers.push({
-                                    severity: monaco.MarkerSeverity.Warning,
-                                    message: "Possible assignment '=' inside condition — did you mean '=='?",
-                                    startLineNumber: li + 1, startColumn: 1,
-                                    endLineNumber: li + 1, endColumn: rawLine.length + 1,
-                                });
+                        while (j < raw.length) {
+                            // Long string open [[ or [=*[
+                            const longOpen = raw.slice(j).match(/^\[=*\[/);
+                            if (longOpen) {
+                                const eq = longOpen[0].length - 2;
+                                longClose = ']' + '='.repeat(eq) + ']';
+                                const end = raw.indexOf(longClose, j + longOpen[0].length);
+                                if (end !== -1) { j = end + longClose.length; }
+                                else { inLongString = true; break; }
+                                continue;
                             }
+                            // Single-line comment
+                            if (raw[j] === '-' && raw[j+1] === '-') { break; }
+                            // Double-quoted string
+                            if (raw[j] === '"') {
+                                j++;
+                                while (j < raw.length && raw[j] !== '"') { if (raw[j] === '\\') j++; j++; }
+                                j++; continue;
+                            }
+                            // Single-quoted string
+                            if (raw[j] === "'") {
+                                j++;
+                                while (j < raw.length && raw[j] !== "'") { if (raw[j] === '\\') j++; j++; }
+                                j++; continue;
+                            }
+                            cl += raw[j]; j++;
                         }
+                        out.push(cl);
                     }
+                    return out;
+                })();
 
-                    // ── Trailing comma before end/until ──
-                    if (/,\s*$/.test(line) && /^\s*(end|until)\b/.test(lines[li + 1] || '')) {
-                        const col = line.trimEnd().length;
-                        markers.push({
-                            severity: monaco.MarkerSeverity.Warning,
-                            message: 'Trailing comma before end/until',
-                            startLineNumber: li + 1, startColumn: col,
-                            endLineNumber: li + 1, endColumn: col + 1,
-                        });
-                    }
+                // ── Block balance (only on clean lines) ──
+                // Key fix: `for`/`while` lines contain `do` — we must not double-count.
+                // Strategy: each `for`/`while` contributes ONE block (the `do` closes it).
+                // A standalone `do` (not on a for/while line) opens its own block.
+                const blockStack = [];
+                const keyRe = /\b(function|if|for|while|repeat|do|then|end|until|else|elseif)\b/g;
 
-                    // ── # on a number literal ──
-                    const hashNum = line.match(/#(\d)/);
-                    if (hashNum) {
-                        const col = line.indexOf('#' + hashNum[1]) + 1;
-                        markers.push({
-                            severity: monaco.MarkerSeverity.Error,
-                            message: "Cannot apply '#' length operator to a number literal",
-                            startLineNumber: li + 1, startColumn: col,
-                            endLineNumber: li + 1, endColumn: col + 2,
-                        });
-                    }
+                cleanLines.forEach((cl, li) => {
+                    const lineNum = li + 1;
+                    const isForWhile = /^\s*(for|while)\b/.test(cl);
 
-                    // ── Block balance tracking ──
-                    let kw;
-                    blockKeywordRe.lastIndex = 0;
-                    while ((kw = blockKeywordRe.exec(line)) !== null) {
-                        const word = kw[1];
-                        if (word === 'function' || word === 'do' || word === 'repeat') {
-                            blockStack.push({ word, line: li + 1 });
-                        } else if (word === 'if' || word === 'for' || word === 'while') {
-                            blockStack.push({ word, line: li + 1 });
-                        } else if (word === 'then' || word === 'else' || word === 'elseif') {
-                            // part of existing if-block, no push/pop
-                        } else if (word === 'end') {
+                    let m;
+                    keyRe.lastIndex = 0;
+                    while ((m = keyRe.exec(cl)) !== null) {
+                        const w = m[1];
+                        if (w === 'function' || w === 'if' || w === 'repeat') {
+                            blockStack.push({ word: w, line: lineNum });
+                        } else if (w === 'for' || w === 'while') {
+                            blockStack.push({ word: w, line: lineNum });
+                        } else if (w === 'do') {
+                            // skip the `do` that belongs to a for/while on this same line
+                            if (isForWhile) { /* consumed by for/while push above */ }
+                            else { blockStack.push({ word: 'do', line: lineNum }); }
+                        } else if (w === 'then' || w === 'else' || w === 'elseif') {
+                            // part of if-block flow, no stack change
+                        } else if (w === 'end') {
                             if (blockStack.length === 0) {
                                 markers.push({
                                     severity: monaco.MarkerSeverity.Error,
                                     message: "Unexpected 'end' — no matching block opener",
-                                    startLineNumber: li + 1, startColumn: kw.index + 1,
-                                    endLineNumber: li + 1, endColumn: kw.index + 4,
+                                    startLineNumber: lineNum, startColumn: m.index + 1,
+                                    endLineNumber: lineNum,   endColumn: m.index + 4,
                                 });
                             } else {
                                 blockStack.pop();
                             }
-                        } else if (word === 'until') {
+                        } else if (w === 'until') {
                             const top = blockStack[blockStack.length - 1];
                             if (!top || top.word !== 'repeat') {
                                 markers.push({
                                     severity: monaco.MarkerSeverity.Error,
                                     message: "Unexpected 'until' — no matching 'repeat'",
-                                    startLineNumber: li + 1, startColumn: kw.index + 1,
-                                    endLineNumber: li + 1, endColumn: kw.index + 6,
+                                    startLineNumber: lineNum, startColumn: m.index + 1,
+                                    endLineNumber: lineNum,   endColumn: m.index + 6,
                                 });
                             } else {
                                 blockStack.pop();
@@ -1107,10 +1070,52 @@
                 blockStack.forEach(b => {
                     markers.push({
                         severity: monaco.MarkerSeverity.Error,
-                        message: `Unclosed '${b.word}' block — missing 'end'${b.word === 'repeat' ? " or 'until'" : ''}`,
+                        message: `Unclosed '${b.word}' — missing '${b.word === 'repeat' ? 'until' : 'end'}'`,
                         startLineNumber: b.line, startColumn: 1,
-                        endLineNumber: b.line, endColumn: 1,
+                        endLineNumber: b.line,   endColumn: lines[b.line - 1].length + 1,
                     });
+                });
+
+                // ── Typo warnings (on raw lines, safe — just string matching) ──
+                const typoMap = {
+                    writFile: 'writefile', readFile: 'readfile', listFile: 'listfiles',
+                    makeFolder: 'makefolder', isFile: 'isfile', isFolder: 'isfolder',
+                    setClipboard: 'setclipboard', getClipboard: 'getclipboard',
+                    loadString: 'loadstring', getScriptBytecode: 'getscriptbytecode',
+                    fireClickDetector: 'fireclickdetector', getInstances: 'getinstances',
+                    getScripts: 'getscripts', getHUI: 'gethui', getGenv: 'getgenv',
+                    getRenv: 'getrenv', checkCaller: 'checkcaller',
+                };
+                lines.forEach((raw, li) => {
+                    Object.entries(typoMap).forEach(([typo, correct]) => {
+                        const idx = raw.indexOf(typo + '(');
+                        if (idx !== -1) {
+                            markers.push({
+                                severity: monaco.MarkerSeverity.Warning,
+                                message: `'${typo}' — did you mean '${correct}'?`,
+                                startLineNumber: li + 1, startColumn: idx + 1,
+                                endLineNumber: li + 1,   endColumn: idx + typo.length + 1,
+                            });
+                        }
+                    });
+
+                    // ── Assignment in condition (only on clean line to avoid string FPs) ──
+                    const cl = cleanLines[li] || '';
+                    if (/^\s*(if|while|elseif)\b/.test(cl)) {
+                        // Extract only up to the first 'then'/'do' so body assignments don't bleed in
+                        const condMatch = cl.match(/^\s*(?:if|while|elseif)\s+([\s\S]*?)\s+(?:then|do)\b/);
+                        if (condMatch) {
+                            const cond = condMatch[1];
+                            if (/(?<![=!<>~])=(?!=)/.test(cond)) {
+                                markers.push({
+                                    severity: monaco.MarkerSeverity.Warning,
+                                    message: "Possible assignment '=' inside condition — did you mean '=='?",
+                                    startLineNumber: li + 1, startColumn: 1,
+                                    endLineNumber: li + 1,   endColumn: raw.length + 1,
+                                });
+                            }
+                        }
+                    }
                 });
 
                 monaco.editor.setModelMarkers(model, 'lua-lint', markers);
@@ -1130,5 +1135,3 @@
 </body>
 
 </html>
-
-
