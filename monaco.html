@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Astralise</title>
+    <title>FluxusZ</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
     <style>
         :root {
@@ -37,15 +37,20 @@
         .tabs-bar {
             display: flex;
             align-items: center;
-            gap: 6px;
-            background: transparent;
-            padding: 7px 8px 0 8px;
+            gap: 0;
+            background: rgba(6, 13, 20, 0.9);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 0 8px 0 8px;
+            height: 36px;
+            flex-shrink: 0;
         }
 
         .tabs-container {
             display: flex;
-            gap: 6px;
+            gap: 2px;
             overflow-x: auto;
+            height: 100%;
+            align-items: center;
         }
 
         .tabs-container::-webkit-scrollbar { height: 0px; }
@@ -54,32 +59,53 @@
         .tab-item {
             display: inline-flex;
             align-items: center;
-            gap: 4px;
-            padding: 4px 10px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.03);
+            gap: 6px;
+            padding: 0 10px 0 8px;
+            height: 28px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid transparent;
             border-radius: 6px;
-            font-size: 11px;
-            color: #888;
+            font-size: 11.5px;
+            letter-spacing: 0.01em;
+            color: rgba(255,255,255,0.38);
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: background 0.15s, color 0.15s, border-color 0.15s;
             white-space: nowrap;
-            width: fit-content;
             min-width: 0;
             max-width: 180px;
             user-select: none;
+            position: relative;
         }
 
         .tab-item:hover {
-            background: rgba(79, 172, 254, 0.08);
-            color: #ccc;
+            background: rgba(79, 172, 254, 0.07);
+            color: rgba(255,255,255,0.7);
+            border-color: rgba(79, 172, 254, 0.12);
         }
 
         .tab-item.active {
-            background: rgba(79, 172, 254, 0.12);
-            border-color: rgba(79, 172, 254, 0.25);
-            color: #fff;
+            background: rgba(79, 172, 254, 0.11);
+            border-color: rgba(79, 172, 254, 0.28);
+            color: #e8f4ff;
             font-weight: 500;
+            box-shadow: 0 0 10px rgba(79, 172, 254, 0.08);
+        }
+
+        .tab-item.active .tab-file-icon {
+            color: #4facfe;
+            opacity: 1;
+        }
+
+        .tab-file-icon {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+            opacity: 0.4;
+            transition: opacity 0.15s, color 0.15s;
+        }
+
+        .tab-item:hover .tab-file-icon {
+            opacity: 0.7;
         }
 
         .tab-name {
@@ -109,38 +135,45 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 12px;
-            height: 12px;
+            width: 14px;
+            height: 14px;
             border-radius: 3px;
-            opacity: 0.5;
+            opacity: 0;
             flex-shrink: 0;
-            transition: all 0.2s;
-	    margin-left: 2px
+            transition: opacity 0.15s, background 0.15s, color 0.15s;
+            margin-left: 1px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .tab-item:hover .tab-close,
+        .tab-item.active .tab-close {
+            opacity: 0.5;
         }
 
         .tab-close:hover {
-            opacity: 1;
-            background: rgba(79, 172, 254, 0.15);
+            opacity: 1 !important;
+            background: rgba(79, 172, 254, 0.18);
             color: #4facfe;
         }
 
         .add-tab-btn {
             background: transparent;
             border: none;
-            color: #666;
+            color: rgba(255,255,255,0.3);
             cursor: pointer;
             width: 24px;
             height: 24px;
-            border-radius: 50%;
+            border-radius: 5px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s;
+            transition: all 0.15s;
             flex-shrink: 0;
+            margin-left: 4px;
         }
 
         .add-tab-btn:hover {
-            background: rgba(79, 172, 254, 0.08);
+            background: rgba(79, 172, 254, 0.1);
             color: #4facfe;
         }
 
@@ -236,6 +269,10 @@
                 const tabEl = document.createElement('div');
                 tabEl.className = `tab-item ${tab.id === activeTabId ? 'active' : ''}`;
 
+                const iconEl = document.createElement('span');
+                iconEl.className = 'tab-file-icon';
+                iconEl.innerHTML = `<svg width="9" height="9" viewBox="0 0 9 9" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M7.375 0C7.80598 0 8.2193 0.171205 8.52405 0.475951C8.8288 0.780698 9 1.19402 9 1.625V5H6.625C6.19402 5 5.7807 5.17121 5.47595 5.47595C5.17121 5.7807 5 6.19402 5 6.625V9H1.625C1.19402 9 0.780698 8.8288 0.475951 8.52405C0.171205 8.2193 0 7.80598 0 7.375V1.625C0 1.19402 0.171205 0.780698 0.475951 0.475951C0.780698 0.171205 1.19402 0 1.625 0H7.375ZM8.78 5.75L5.75 8.78V6.625C5.75 6.142 6.142 5.75 6.625 5.75H8.78Z"/></svg>`;
+
                 const nameEl = document.createElement('span');
                 nameEl.className = 'tab-name';
                 nameEl.contentEditable = 'false';
@@ -258,6 +295,7 @@
                     </svg>
                 `;
 
+                tabEl.appendChild(iconEl);
                 tabEl.appendChild(nameEl);
                 tabEl.appendChild(closeEl);
 
@@ -389,8 +427,6 @@
                 smoothScrolling: true,
                 padding: { top: 10, bottom: 10 }
             });
-
-            // Global helpers for WPF interop
             window.SetText = (text) => {
                 const tab = tabs.find(t => t.id === activeTabId);
                 if (tab) {
@@ -401,8 +437,6 @@
             };
 
             window.GetText = () => window.editor.getValue();
-
-            // Autosave on every keystroke
             window.editor.onDidChangeModelContent(() => {
                 const currentTab = tabs.find(t => t.id === activeTabId);
                 if (currentTab) {
