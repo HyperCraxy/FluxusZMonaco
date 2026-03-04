@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FluxusZ</title>
+    <title>Astralise</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
     <style>
         :root {
@@ -249,11 +249,6 @@
             color: #fbbf24;
         }
 
-        .status-diag-item.errors.zero,
-        .status-diag-item.warnings.zero {
-            color: rgba(255,255,255,0.25);
-        }
-
         .status-btn {
             display: flex;
             align-items: center;
@@ -488,7 +483,7 @@
     </div>
 
     <script>
-        const STORAGE_KEY = 'FluxusZ_tabs';
+        const STORAGE_KEY = 'Astralise_tabs';
 
         const persist = () => {
             try {
@@ -997,7 +992,7 @@
                 }
             });
 
-            monaco.editor.defineTheme('FluxusZ-theme', {
+            monaco.editor.defineTheme('Astralise-theme', {
                 base: 'vs-dark',
                 inherit: true,
                 rules: [
@@ -1021,7 +1016,7 @@
             window.editor = monaco.editor.create(document.getElementById('monaco-editor'), {
                 value: activeTab.content,
                 language: 'lua',
-                theme: 'FluxusZ-theme',
+                theme: 'Astralise-theme',
                 automaticLayout: true,
                 fontSize: 11,
                 fontFamily: "'Fira Code', monospace",
@@ -1057,7 +1052,7 @@
             });
 
             // ── Editor Settings: persist & restore ──
-            const SETTINGS_KEY = 'FluxusZ_settings';
+            const SETTINGS_KEY = 'Astralise_settings';
             const saveSettings = (patch) => {
                 try {
                     const current = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
@@ -1165,16 +1160,16 @@
                 const errClass = errors > 0 ? 'errors' : 'errors zero';
                 const warnClass = warnings > 0 ? 'warnings' : 'warnings zero';
                 const html =
-                    `<span class="status-diag-item ${errClass}" title="${errors} error${errors !== 1 ? 's' : ''} — click to navigate" style="cursor:${errors>0?'pointer':'default'}" id="diag-errors-btn">
+                    (errors > 0 ? `<span class="status-diag-item errors" title="${errors} error${errors !== 1 ? 's' : ''} — click to navigate" style="cursor:pointer" id="diag-errors-btn">
                         <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.8"/><line x1="8" y1="4.5" x2="8" y2="9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="8" cy="11.5" r="0.9" fill="currentColor"/></svg>
                         ${errors}
-                    </span>` +
-                    `<span class="status-diag-item ${warnClass}" title="${warnings} warning${warnings !== 1 ? 's' : ''} — click to navigate" style="cursor:${warnings>0?'pointer':'default'}" id="diag-warnings-btn">
+                    </span>` : '') +
+                    (warnings > 0 ? `<span class="status-diag-item warnings" title="${warnings} warning${warnings !== 1 ? 's' : ''} — click to navigate" style="cursor:pointer" id="diag-warnings-btn">
                         <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2L15 14H1L8 2Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><line x1="8" y1="7" x2="8" y2="10.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="8" cy="12.5" r="0.9" fill="currentColor"/></svg>
                         ${warnings}
-                    </span>`;
+                    </span>` : '');
                 diagEl.innerHTML = html;
-                diagDivider.style.display = '';
+                diagDivider.style.display = (errors > 0 || warnings > 0) ? '' : 'none';
 
                 // Navigate to first error on click
                 const errBtn = document.getElementById('diag-errors-btn');
