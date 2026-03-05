@@ -534,6 +534,8 @@
             }
         }, true);
 
+        const STORAGE_KEY = 'Astralise_tabs';
+
         const persist = () => {
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify({ tabs, activeTabId }));
@@ -1183,12 +1185,14 @@
 
             window.GetText = () => window.editor.getValue();
 
-            // Autosave on every keystroke
+            // Autosave — debounced 300ms after last keystroke
+            let _persistTimer = null;
             window.editor.onDidChangeModelContent(() => {
                 const currentTab = tabs.find(t => t.id === activeTabId);
                 if (currentTab) {
                     currentTab.content = window.editor.getValue();
-                    persist();
+                    clearTimeout(_persistTimer);
+                    _persistTimer = setTimeout(persist, 300);
                 }
             });
 
