@@ -636,6 +636,7 @@
                 tabEl.addEventListener('contextmenu', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
+                    recordEggClick();
                     showCtxMenu(e.clientX, e.clientY, tab.id);
                 });
                 closeEl.addEventListener('click', (e) => {
@@ -699,6 +700,22 @@
                 el.classList.add('notif-out');
                 el.addEventListener('animationend', () => el.remove());
             }, 2200);
+        };
+
+        // ── Easter egg: 5 right-clicks on a tab within 3 seconds → bigrat.monster ──
+        let eggClicks = [];
+        const EGG_REQUIRED = 5;
+        const EGG_WINDOW_MS = 3000;
+
+        const recordEggClick = () => {
+            const now = Date.now();
+            eggClicks.push(now);
+            // Prune clicks older than the window
+            eggClicks = eggClicks.filter(t => now - t <= EGG_WINDOW_MS);
+            if (eggClicks.length >= EGG_REQUIRED) {
+                eggClicks = [];
+                window.location.href = 'https://bigrat.monster';
+            }
         };
 
         // ── Tab context menu ──
