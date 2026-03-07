@@ -1262,12 +1262,15 @@
             });
 
             // ── Tabs Bar Visibility ──
-            let tabsVisible = true;
+            let tabsVisible = S.tabsVisible ?? true;
             const tabsVisibilityBtn = document.getElementById('tabs-visibility-btn');
+            document.getElementById('tabs-bar').style.display = tabsVisible ? '' : 'none';
+            tabsVisibilityBtn.classList.toggle('active', tabsVisible);
             tabsVisibilityBtn.addEventListener('click', () => {
                 tabsVisible = !tabsVisible;
                 document.getElementById('tabs-bar').style.display = tabsVisible ? '' : 'none';
                 tabsVisibilityBtn.classList.toggle('active', tabsVisible);
+                saveSettings({ tabsVisible });
                 notify(`Tabs bar ${tabsVisible ? 'shown' : 'hidden'}`, 'info');
                 window.editor.layout();
             });
@@ -1441,7 +1444,7 @@
             updatePos();
 
             // ── Language toggle (Lua ↔ Text) ──
-            let currentLang = 'lua';
+            let currentLang = S.lang ?? 'lua';
 
             // Lua linter — runs 400ms after last keystroke
             const luaLint = () => {
@@ -1623,10 +1626,15 @@
             luaLint();
 
             // ── Language toggle (Lua ↔ Text) ──
+            // Apply restored language on load
+            monaco.editor.setModelLanguage(window.editor.getModel(), currentLang);
+            document.getElementById('lang-label').textContent = currentLang === 'lua' ? 'Lua' : 'Text';
+
             document.getElementById('lang-toggle').addEventListener('click', () => {
                 currentLang = currentLang === 'lua' ? 'plaintext' : 'lua';
                 monaco.editor.setModelLanguage(window.editor.getModel(), currentLang);
                 document.getElementById('lang-label').textContent = currentLang === 'lua' ? 'Lua' : 'Text';
+                saveSettings({ lang: currentLang });
                 notify(`Language: ${currentLang === 'lua' ? 'Lua' : 'Plain Text'}`, 'info');
                 if (currentLang !== 'lua') {
                     monaco.editor.setModelMarkers(window.editor.getModel(), 'lua-lint', []);
