@@ -409,7 +409,148 @@
             background-color: transparent !important;
         }
 
+        /* ── UNC Test Panel ── */
+        #test-panel {
+            position: fixed;
+            top: 0; right: 0;
+            width: 340px;
+            height: 100%;
+            background: rgba(5, 11, 20, 0.98);
+            border-left: 1px solid rgba(79,172,254,0.12);
+            z-index: 8000;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.22s cubic-bezier(0.2,0,0,1);
+            box-shadow: -8px 0 32px rgba(0,0,0,0.5);
+            font-family: 'Fira Code', monospace;
+        }
+        #test-panel.open { transform: translateX(0); }
 
+        #test-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            flex-shrink: 0;
+        }
+        #test-panel-title {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: #4facfe;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        #test-panel-close {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.3);
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: all 0.15s;
+            line-height: 1;
+        }
+        #test-panel-close:hover { background: rgba(255,255,255,0.07); color: #fff; }
+
+        #test-panel-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            flex-shrink: 0;
+        }
+        .tp-btn {
+            background: rgba(79,172,254,0.08);
+            border: 1px solid rgba(79,172,254,0.18);
+            color: #4facfe;
+            font-family: 'Fira Code', monospace;
+            font-size: 10px;
+            padding: 3px 9px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s;
+            letter-spacing: 0.03em;
+        }
+        .tp-btn:hover { background: rgba(79,172,254,0.18); }
+        .tp-btn:disabled { opacity: 0.4; cursor: default; }
+        .tp-btn.danger { background: rgba(248,113,113,0.08); border-color: rgba(248,113,113,0.2); color: #f87171; }
+        .tp-btn.danger:hover { background: rgba(248,113,113,0.18); }
+
+        #test-summary {
+            padding: 5px 14px;
+            font-size: 10px;
+            color: rgba(255,255,255,0.35);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            flex-shrink: 0;
+            min-height: 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        #test-summary .sum-pass { color: #4ade80; }
+        #test-summary .sum-fail { color: #f87171; }
+        #test-summary .sum-skip { color: #fbbf24; }
+
+        #test-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 4px 0 8px;
+        }
+        #test-list::-webkit-scrollbar { width: 4px; }
+        #test-list::-webkit-scrollbar-track { background: transparent; }
+        #test-list::-webkit-scrollbar-thumb { background: rgba(79,172,254,0.2); border-radius: 2px; }
+
+        .test-category {
+            padding: 8px 14px 2px;
+            font-size: 9.5px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.2);
+            user-select: none;
+        }
+
+        .test-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 14px;
+            font-size: 10.5px;
+            color: rgba(255,255,255,0.55);
+            transition: background 0.1s;
+            cursor: default;
+            min-height: 24px;
+        }
+        .test-row:hover { background: rgba(255,255,255,0.03); }
+        .test-row .test-name {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 10.5px;
+        }
+        .test-row .test-note {
+            font-size: 9px;
+            color: rgba(255,255,255,0.2);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 110px;
+        }
+        .test-badge {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: rgba(255,255,255,0.1);
+        }
+        .test-badge.pass  { background: #4ade80; box-shadow: 0 0 5px #4ade8055; }
+        .test-badge.fail  { background: #f87171; box-shadow: 0 0 5px #f8717155; }
+        .test-badge.skip  { background: #fbbf24; }
+        .test-badge.running { background: #4facfe; animation: pulse-badge 0.7s infinite alternate; }
+        @keyframes pulse-badge { from { opacity:0.4; } to { opacity:1; } }
     </style>
 </head>
 
@@ -511,7 +652,13 @@
                     Tabs
                 </button>
                 <span class="status-btn-divider"></span>
-                <button class="status-btn" id="fontdec-btn" title="Decrease Font Size">
+                <button class="status-btn" id="test-panel-btn" title="UNC Function Tests">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.2"/>
+                        <path d="M4 5.5 L5.5 7 L8.5 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Tests
+                </button>
                     <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="2" y1="5" x2="8" y2="5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
                 </button>
                 <span id="font-size-label" style="font-size:10.5px;color:rgba(255,255,255,0.3);min-width:20px;text-align:center;font-family:'Fira Code',monospace;">11</span>
@@ -531,6 +678,19 @@
         </div>
     </div>
 
+    <!-- ── UNC Test Panel ── -->
+    <div id="test-panel">
+        <div id="test-panel-header">
+            <span id="test-panel-title">UNC Tests</span>
+            <button id="test-panel-close" title="Close">✕</button>
+        </div>
+        <div id="test-panel-toolbar">
+            <button class="tp-btn" id="tp-run-all">▶ Run All</button>
+            <button class="tp-btn danger" id="tp-clear">Clear</button>
+        </div>
+        <div id="test-summary"></div>
+        <div id="test-list"></div>
+    </div>
 
     <script>
         // Block Ctrl+S / Ctrl+Shift+S (browser save) globally
@@ -945,15 +1105,15 @@
             addTab();
         });
 
-        // Render tabs immediately on load (before Monaco is ready)
-        updateTabsUI();
-
         document.getElementById('tabs-container')?.addEventListener('wheel', (e) => {
             if (e.deltaY !== 0) {
                 e.preventDefault();
                 document.getElementById('tabs-container').scrollLeft += e.deltaY;
             }
         }, { passive: false });
+
+        // Render tabs immediately so they show before Monaco finishes loading
+        updateTabsUI();
 
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' } });
 
@@ -1134,7 +1294,7 @@
                             { label: 'clearqueueonteleport',    sig: 'clearqueueonteleport(enabled)',       doc: 'Enables or disables clearing the teleport queue on teleport. Pass a boolean.' },
                             { label: 'clearteleportqueue',      sig: 'clearteleportqueue(enabled)',         doc: 'Alias for clearqueueonteleport(enabled).' },
                             { label: 'clear_teleport_queue',    sig: 'clear_teleport_queue(enabled)',       doc: 'Alias for clearqueueonteleport(enabled).' },
-                            { label: 'FluxusZExec',             sig: 'FluxusZExec(code)',                   doc: 'Compiles and executes a Lua code string in the Fluxusz executor environment.' },
+
                             // Connections / signals
                             { label: 'getsignalarguments',      sig: 'getsignalarguments(signal)',          doc: 'Returns a table of argument type strings for the given RBXScriptSignal.' },
                             { label: 'cansignalreplicate',      sig: 'cansignalreplicate(signal)',          doc: 'Returns true if the given RBXScriptSignal belongs to a replicating remote (RemoteEvent/RemoteFunction).' },
@@ -1259,7 +1419,67 @@
                         { label: 'getservice', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'game:GetService("${1:ServiceName}")', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Get a Roblox service' },
                         { label: 'remote', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'game:GetService("ReplicatedStorage").${1:RemoteName}:FireServer($0)', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Fire a remote event' },
                         { label: 'tween', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'game:GetService("TweenService"):Create(${1:object}, TweenInfo.new(${2:1}), {${3:Property} = ${4:Value}}):Play()', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Create and play a tween' },
-                        { label: 'raycast', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'local params = RaycastParams.new()\nparams.FilterType = Enum.RaycastFilterType.Blacklist\nparams.FilterDescendantsInstances = {${1:table}}\n\nlocal result = workspace:Raycast(${2:origin}, ${3:direction}, params)\nif result then\n\t$0\nend', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Roblox Raycast setup' }
+                        { label: 'raycast', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'local params = RaycastParams.new()\nparams.FilterType = Enum.RaycastFilterType.Blacklist\nparams.FilterDescendantsInstances = {${1:table}}\n\nlocal result = workspace:Raycast(${2:origin}, ${3:direction}, params)\nif result then\n\t$0\nend', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Roblox Raycast setup' },
+
+                        // ── Unsupported executor functions (not in FluxusZ) ──
+                        // These are common UNC/executor functions from other executors.
+                        // Shown with deprecated tag (strikethrough) and a red ⛔ detail to signal they are NOT supported.
+                        ...[
+                            // hookfunction / detour
+                            { label: 'hookfunction',            sig: 'hookfunction(func, hook)',                    doc: 'Replaces func with hook at the bytecode level. Returns the original function. **Not Supported Function.**' },
+                            { label: 'hookmetamethod',          sig: 'hookmetamethod(obj, metamethod, hook)',        doc: 'Hooks a metamethod on obj\'s metatable. **Not Supported Function.**' },
+                            { label: 'restorefunction',         sig: 'restorefunction(func)',                       doc: 'Restores a previously hooked function to its original. **Not Supported Function.**' },
+                            // getrawmetatable / setrawmetatable
+                            { label: 'getrawmetatable',         sig: 'getrawmetatable(obj)',                        doc: 'Returns the raw metatable of obj, bypassing __metatable. **Not Supported Function.**' },
+                            { label: 'setrawmetatable',         sig: 'setrawmetatable(obj, mt)',                    doc: 'Sets the raw metatable of obj, bypassing __metatable protection. **Not Supported Function.**' },
+                            // getconstant / getconstants
+                            { label: 'getconstant',             sig: 'getconstant(func, index)',                    doc: 'Returns the constant at index in func\'s constant table. **Not Supported Function.**' },
+                            { label: 'getconstants',            sig: 'getconstants(func)',                          doc: 'Returns all constants from func\'s constant table as a table. **Not Supported Function.**' },
+                            { label: 'setconstants',            sig: 'setconstants(func, t)',                       doc: 'Replaces all constants in func from table t. **Not Supported Function.**' },
+                            // getproto / getprotos
+                            { label: 'getproto',                sig: 'getproto(func, index, activated)',            doc: 'Returns the inner proto (sub-function) at index of func. **Not Supported Function.**' },
+                            { label: 'getprotos',               sig: 'getprotos(func)',                             doc: 'Returns all inner protos of func as a table. **Not Supported Function.**' },
+                            // getinfo / stack manipulation
+                            { label: 'getinfo',                 sig: 'getinfo(func)',                               doc: 'Returns debug info table for func (alias of debug.getinfo in some executors). **Not Supported Function.**' },
+                            { label: 'getlocal',                sig: 'getlocal(level, index)',                      doc: 'Returns the local variable name and value at level and index. **Not Supported Function.**' },
+                            { label: 'getlocals',               sig: 'getlocals(level)',                            doc: 'Returns all locals at the given stack level as a table. **Not Supported Function.**' },
+                            { label: 'setlocal',                sig: 'setlocal(level, index, value)',               doc: 'Sets a local variable at the given stack level. **Not Supported Function.**' },
+                            // getmetafield
+                            { label: 'getmetafield',            sig: 'getmetafield(obj, field)',                    doc: 'Returns a specific metamethod from obj\'s metatable. **Not Supported Function.**' },
+                            // syn.* / Synapse compat
+                            { label: 'syn.protect_gui',         sig: 'syn.protect_gui(gui)',                        doc: 'Synapse: Prevents a ScreenGui from appearing in gethui(). **Not Supported Function.**' },
+                            { label: 'syn.run_on_actor',        sig: 'syn.run_on_actor(actor, script)',             doc: 'Synapse: Runs a script on the given Actor. **Not Supported Function.**' },
+                            { label: 'syn.write_clipboard',     sig: 'syn.write_clipboard(text)',                   doc: 'Synapse: Writes text to the clipboard. **Not Supported Function.**' },
+                            { label: 'syn.is_cached',           sig: 'syn.is_cached(instance)',                     doc: 'Synapse: Returns true if instance is in the cache. **Not Supported Function.**' },
+                            // protect_gui / queue_on_teleport (top-level in some executors)
+                            { label: 'protect_gui',             sig: 'protect_gui(gui)',                            doc: 'Prevents gui from showing up in gethui(). **Not Supported Function.**' },
+                            { label: 'run_on_actor',            sig: 'run_on_actor(actor, script)',                 doc: 'Runs a script on a specific Actor. **Not Supported Function.**' },
+                            // setfflag
+                            { label: 'setfflag',                sig: 'setfflag(flag, value)',                       doc: 'Sets a Roblox FFlag before the engine reads it. **Not Supported Function.**' },
+                            // getfflag
+                            { label: 'getfflag',                sig: 'getfflag(flag)',                              doc: 'Returns the current value of a Roblox FFlag. **Not Supported Function.**' },
+                            // input simulation (not in FluxusZ)
+                            { label: 'simulateclick',           sig: 'simulateclick(x, y)',                         doc: 'Simulates a mouse click at screen coordinates. **Not Supported Function.**' },
+                            // getnamecallmethod / setnamecallmethod
+                            { label: 'getnamecallmethod',       sig: 'getnamecallmethod()',                         doc: 'Returns the current namecall method string inside a __namecall hook. **Not Supported Function.**' },
+                            { label: 'setnamecallmethod',       sig: 'setnamecallmethod(name)',                     doc: 'Overrides the namecall method string inside a __namecall hook. **Not Supported Function.**' },
+                            { label: 'cleardrawcache',          sig: 'cleardrawcache()',                            doc: 'Clears the internal drawing cache. **Not Supported Function.**' },
+                            // getrenderproperty / setrenderproperty
+                            { label: 'getrenderproperty',       sig: 'getrenderproperty(obj, prop)',                doc: 'Gets a render property from a Drawing object. **Not Supported Function.**' },
+                            { label: 'setrenderproperty',       sig: 'setrenderproperty(obj, prop, val)',           doc: 'Sets a render property on a Drawing object. **Not Supported Function.**' },
+                            // isrenderobj
+                            { label: 'isrenderobj',             sig: 'isrenderobj(obj)',                            doc: 'Returns true if obj is a valid Drawing render object. **Not Supported Function.**' },
+                            // getscriptclosure
+                            { label: 'getscriptclosure',        sig: 'getscriptclosure(script)',                    doc: 'Returns the main closure of a script instance. **Not Supported Function.**' },
+                        ].map(e => ({
+                            label: e.label,
+                            kind: monaco.languages.CompletionItemKind.Function,
+                            insertText: e.label + '($1)',
+                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                            documentation: { value: '```lua\n' + e.sig + '\n```\n\n' + e.doc.replace(/ \*\*Not Supported Function\.\*\*/g, '') },
+                            detail: e.sig,
+                            tags: [monaco.languages.CompletionItemTag.Deprecated],
+                        })),
                     ];
                     return { suggestions };
                 }
@@ -1823,8 +2043,44 @@
                 { label: 'OnServerEvent',           sig: 'remoteEvent.OnServerEvent:Connect(callback)', doc: 'Fires on the server when any client calls FireServer. callback(player, ...).' },
             ];
 
+            // ── Unsupported executor functions (for hover tooltips) ──
+            const _unsupportedDefs = [
+                { label: 'hookfunction',        sig: 'hookfunction(func, hook)',                    doc: 'Replaces func with hook at the bytecode level. Returns the original.' },
+                { label: 'hookmetamethod',      sig: 'hookmetamethod(obj, metamethod, hook)',        doc: 'Hooks a metamethod on obj\'s metatable.' },
+                { label: 'restorefunction',     sig: 'restorefunction(func)',                       doc: 'Restores a previously hooked function to its original.' },
+                { label: 'getrawmetatable',     sig: 'getrawmetatable(obj)',                        doc: 'Returns the raw metatable of obj, bypassing __metatable.' },
+                { label: 'setrawmetatable',     sig: 'setrawmetatable(obj, mt)',                    doc: 'Sets the raw metatable of obj, bypassing __metatable protection.' },
+                { label: 'getconstant',         sig: 'getconstant(func, index)',                    doc: 'Returns the constant at index in func\'s constant table.' },
+                { label: 'getconstants',        sig: 'getconstants(func)',                          doc: 'Returns all constants from func\'s constant table.' },
+                { label: 'setconstants',        sig: 'setconstants(func, t)',                       doc: 'Replaces all constants in func from table t.' },
+                { label: 'getproto',            sig: 'getproto(func, index, activated)',            doc: 'Returns the inner proto (sub-function) at index of func.' },
+                { label: 'getprotos',           sig: 'getprotos(func)',                             doc: 'Returns all inner protos of func.' },
+                { label: 'getinfo',             sig: 'getinfo(func)',                               doc: 'Returns debug info for func.' },
+                { label: 'getlocal',            sig: 'getlocal(level, index)',                      doc: 'Returns the local variable at level/index.' },
+                { label: 'getlocals',           sig: 'getlocals(level)',                            doc: 'Returns all locals at the given stack level.' },
+                { label: 'setlocal',            sig: 'setlocal(level, index, value)',               doc: 'Sets a local variable at the given stack level.' },
+                { label: 'getmetafield',        sig: 'getmetafield(obj, field)',                    doc: 'Returns a specific metamethod from obj\'s metatable.' },
+                { label: 'syn.protect_gui',     sig: 'syn.protect_gui(gui)',                        doc: 'Prevents a ScreenGui from appearing in gethui().' },
+                { label: 'syn.run_on_actor',    sig: 'syn.run_on_actor(actor, script)',             doc: 'Runs a script on the given Actor.' },
+                { label: 'syn.write_clipboard', sig: 'syn.write_clipboard(text)',                   doc: 'Writes text to the clipboard.' },
+                { label: 'syn.is_cached',       sig: 'syn.is_cached(instance)',                     doc: 'Returns true if instance is in the cache.' },
+                { label: 'protect_gui',         sig: 'protect_gui(gui)',                            doc: 'Prevents gui from showing up in gethui().' },
+                { label: 'run_on_actor',        sig: 'run_on_actor(actor, script)',                 doc: 'Runs a script on a specific Actor.' },
+                { label: 'setfflag',            sig: 'setfflag(flag, value)',                       doc: 'Sets a Roblox FFlag before the engine reads it.' },
+                { label: 'getfflag',            sig: 'getfflag(flag)',                              doc: 'Returns the current value of a Roblox FFlag.' },
+                { label: 'simulateclick',       sig: 'simulateclick(x, y)',                         doc: 'Simulates a mouse click at screen coordinates.' },
+                { label: 'getnamecallmethod',   sig: 'getnamecallmethod()',                         doc: 'Returns the current namecall method string inside a __namecall hook.' },
+                { label: 'setnamecallmethod',   sig: 'setnamecallmethod(name)',                     doc: 'Overrides the namecall method string inside a __namecall hook.' },
+                { label: 'cleardrawcache',      sig: 'cleardrawcache()',                            doc: 'Clears the internal drawing cache.' },
+                { label: 'getrenderproperty',   sig: 'getrenderproperty(obj, prop)',                doc: 'Gets a render property from a Drawing object.' },
+                { label: 'setrenderproperty',   sig: 'setrenderproperty(obj, prop, val)',           doc: 'Sets a render property on a Drawing object.' },
+                { label: 'isrenderobj',         sig: 'isrenderobj(obj)',                            doc: 'Returns true if obj is a valid Drawing render object.' },
+                { label: 'getscriptclosure',    sig: 'getscriptclosure(script)',                    doc: 'Returns the main closure of a script instance.' },
+            ];
+            const _unsupportedSet = new Set(_unsupportedDefs.map(e => e.label));
+
             const _hoverMap = Object.fromEntries(
-                [..._allFuncDefs, ..._robloxDefs].map(e => [e.label, e])
+                [..._allFuncDefs, ..._robloxDefs, ..._unsupportedDefs].map(e => [e.label, e])
             );
 
             monaco.languages.registerHoverProvider('lua', {
@@ -1839,6 +2095,7 @@
                     const candidate = nsMatch ? nsMatch[1] + '.' + word.word : word.word;
                     const entry = _hoverMap[candidate] || _hoverMap[word.word];
                     if (!entry) return null;
+                    const isUnsupported = _unsupportedSet.has(entry.label);
                     return {
                         range: new monaco.Range(
                             position.lineNumber, word.startColumn,
@@ -1846,6 +2103,7 @@
                         ),
                         contents: [
                             { value: '```lua\n' + entry.sig + '\n```' },
+                            ...(isUnsupported ? [{ value: '> ⛔ **Not Supported Function**' }] : []),
                             { value: entry.doc }
                         ]
                     };
