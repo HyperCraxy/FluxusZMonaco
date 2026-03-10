@@ -987,6 +987,8 @@
                             // Readonly tables
                             { label: 'setreadonly',         sig: 'setreadonly(t, bool)',            doc: 'Makes table t readonly (true) or writable (false).' },
                             { label: 'isreadonly',          sig: 'isreadonly(t)',                   doc: 'Returns true if table t is currently readonly.' },
+                            { label: 'makereadonly',        sig: 'makereadonly(t)',                 doc: 'Makes table t readonly. Shorthand for setreadonly(t, true).' },
+                            { label: 'makewriteable',       sig: 'makewriteable(t)',                doc: 'Makes table t writable. Shorthand for setreadonly(t, false).' },
                             // HTTP / requests
                             { label: 'request',             sig: 'request(options)',                doc: 'Sends an HTTP request. options: { Url, Method, Body, Headers }. Returns response table.' },
                             { label: 'http_request',        sig: 'http_request(options)',           doc: 'Alias for request(options).' },
@@ -1036,6 +1038,8 @@
                             { label: 'rconsoleerror',       sig: 'rconsoleerror(...)',              doc: 'Alias for rconsoleerr(...).' },
                             { label: 'consoleinput',        sig: 'consoleinput()',                  doc: 'Waits for and returns a line of input from the console.' },
                             { label: 'rconsoleinput',       sig: 'rconsoleinput()',                 doc: 'Alias for consoleinput().' },
+                            { label: 'rconsolehide',        sig: 'rconsolehide()',                  doc: 'Hides the console window without destroying it.' },
+                            { label: 'rconsoleshow',        sig: 'rconsoleshow()',                  doc: 'Shows/restores the console window if it was hidden.' },
                             // Input
                             { label: 'keypress',            sig: 'keypress(key)',                   doc: 'Simulates pressing a key. Accepts Enum.KeyCode, VK number, or string.' },
                             { label: 'keyrelease',          sig: 'keyrelease(key)',                 doc: 'Simulates releasing a key.' },
@@ -1072,7 +1076,13 @@
                             { label: 'isnetworkowner',      sig: 'isnetworkowner(part)',            doc: 'Returns true if the local player owns network control of part.' },
                             { label: 'queue_on_teleport',   sig: 'queue_on_teleport(code)',         doc: 'Queues a Lua code string to run after the next teleport.' },
                             { label: 'queueonteleport',     sig: 'queueonteleport(code)',           doc: 'Alias for queue_on_teleport(code).' },
+                            { label: 'clearqueueteleport',  sig: 'clearqueueteleport()',            doc: 'Clears the current teleport queue, removing any pending queued scripts.' },
                             { label: 'FluxusZExec',         sig: 'FluxusZExec(code)',               doc: 'Compiles and executes a Lua code string in the Fluxusz executor environment.' },
+                            // Connections / signals
+                            { label: 'getsignalarguments',  sig: 'getsignalarguments(signal)',      doc: 'Returns the argument types passed to a signal\'s connected callbacks.' },
+                            { label: 'cansignalreplace',    sig: 'cansignalreplace(signal)',        doc: 'Returns true if the given signal can be replaced or hooked.' },
+                            // Actors
+                            { label: 'getactors',           sig: 'getactors()',                     doc: 'Returns a table of all Actor instances in the current data model.' },
                         ].map(e => ({
                             label: e.label,
                             kind: monaco.languages.CompletionItemKind.Function,
@@ -1097,6 +1107,9 @@
                             { label: 'crypt.encrypt',       sig: 'crypt.encrypt(data, key)',       doc: 'XOR-encrypts data with key. Returns encrypted string and key.' },
                             { label: 'crypt.decrypt',       sig: 'crypt.decrypt(data, key)',       doc: 'Alias for crypt.encrypt (XOR is symmetric).' },
                             { label: 'crypt.hash',          sig: 'crypt.hash(text, algorithm)',    doc: 'Hashes text with the given algorithm (e.g. "sha384", "sha256", "md5").' },
+                            { label: 'crypt.hmac',          sig: 'crypt.hmac(data, key, algorithm)', doc: 'Computes an HMAC of data using key and the specified algorithm.' },
+                            { label: 'Crypt.random',        sig: 'Crypt.random(len)',              doc: 'Alias for crypt.random(len) — generates random bytes (PascalCase variant).' },
+                            { label: 'Crypt.hmac',          sig: 'Crypt.hmac(data, key, algorithm)', doc: 'PascalCase alias for crypt.hmac.' },
                         ].map(e => ({
                             label: e.label,
                             kind: monaco.languages.CompletionItemKind.Function,
@@ -1110,6 +1123,24 @@
                             { label: 'cache.iscached',    sig: 'cache.iscached(instance)',          doc: 'Returns true if instance has not been invalidated.' },
                             { label: 'cache.invalidate',  sig: 'cache.invalidate(instance)',        doc: 'Invalidates an instance and removes it from its parent.' },
                             { label: 'cache.replace',     sig: 'cache.replace(old, new)',           doc: 'Replaces old with new in the cache and reparents it.' },
+                        ].map(e => ({
+                            label: e.label,
+                            kind: monaco.languages.CompletionItemKind.Function,
+                            insertText: e.label + '($1)',
+                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                            documentation: { value: '```lua\n' + e.sig + '\n```\n' + e.doc },
+                            detail: e.sig,
+                        })),
+                        // signal / Signal library
+                        ...[
+                            { label: 'signal.new',          sig: 'signal.new()',                   doc: 'Creates and returns a new Signal object (lowercase alias).' },
+                            { label: 'Signal.new',          sig: 'Signal.new()',                   doc: 'Creates and returns a new Signal object.' },
+                            { label: 'Signal.fire',         sig: 'Signal.fire(signal, ...)',        doc: 'Fires the signal, passing args to all connected callbacks.' },
+                            { label: 'Signal.connect',      sig: 'Signal.connect(signal, func)',    doc: 'Connects a callback function to the signal. Returns a connection.' },
+                            { label: 'Signal.once',         sig: 'Signal.once(signal, func)',       doc: 'Connects a one-shot callback that disconnects after the first fire.' },
+                            { label: 'Signal.wait',         sig: 'Signal.wait(signal)',             doc: 'Yields the current thread until the signal fires, then returns the args.' },
+                            { label: 'Signal.destroy',      sig: 'Signal.destroy(signal)',          doc: 'Destroys the signal and disconnects all connections.' },
+                            { label: 'Signal.disconnectall',sig: 'Signal.disconnectall(signal)',    doc: 'Disconnects all callbacks connected to the signal without destroying it.' },
                         ].map(e => ({
                             label: e.label,
                             kind: monaco.languages.CompletionItemKind.Function,
