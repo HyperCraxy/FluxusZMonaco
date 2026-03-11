@@ -1151,9 +1151,17 @@
                             { label: 'debug.getstack',     sig: 'debug.getstack(level, index)',          doc: 'Returns the value at stack level and optional index. Omit index for the full stack table.' },
                             { label: 'debug.getupvalue',   sig: 'debug.getupvalue(func, index)',         doc: 'Returns the upvalue at index in func. func must be an lclosure.' },
                             { label: 'debug.getupvalues',  sig: 'debug.getupvalues(func)',               doc: 'Returns a table of all upvalues for func. func must be an lclosure.' },
+                            { label: 'debug.setupvalue',   sig: 'debug.setupvalue(func, index, value)',  doc: 'Sets the upvalue at index in func to value.' },
+                            { label: 'debug.setupval',     sig: 'debug.setupval(func, index, value)',    doc: 'Alias for debug.setupvalue.' },
+                            { label: 'debug.setconstant',  sig: 'debug.setconstant(func, index, value)', doc: 'Replaces the constant at index in func\'s constant table with value.' },
+                            { label: 'debug.setvalue',     sig: 'debug.setvalue(func, index, value)',    doc: 'Alias for debug.setconstant.' },
                             // top-level aliases also exposed directly on env
                             { label: 'getupvalue',         sig: 'getupvalue(func, index)',               doc: 'Alias for debug.getupvalue.' },
                             { label: 'getupvalues',        sig: 'getupvalues(func)',                     doc: 'Alias for debug.getupvalues.' },
+                            { label: 'setupvalue',         sig: 'setupvalue(func, index, value)',        doc: 'Alias for debug.setupvalue.' },
+                            { label: 'setupval',           sig: 'setupval(func, index, value)',          doc: 'Alias for debug.setupvalue.' },
+                            { label: 'setconstant',        sig: 'setconstant(func, index, value)',       doc: 'Alias for debug.setconstant.' },
+                            { label: 'setvalue',           sig: 'setvalue(func, index, value)',          doc: 'Alias for debug.setconstant.' },
                             { label: 'getstack',           sig: 'getstack(level, index)',                doc: 'Alias for debug.getstack.' },
                         ].map(e => ({
                             label: e.label,
@@ -1265,15 +1273,6 @@
                             { label: 'getconstant',             sig: 'getconstant(func, index)',                    doc: 'Returns the constant at index in func\'s constant table. **Not Supported Function.**' },
                             { label: 'getconstants',            sig: 'getconstants(func)',                          doc: 'Returns all constants from func\'s constant table as a table. **Not Supported Function.**' },
                             { label: 'setconstants',            sig: 'setconstants(func, t)',                       doc: 'Replaces all constants in func from table t. **Not Supported Function.**' },
-                            // debug.setupvalue / debug.setconstant (not implemented in FluxusZ)
-                            { label: 'debug.setupvalue',        sig: 'debug.setupvalue(func, index, value)',        doc: 'Sets the upvalue at index in func to value. **Not Supported Function.**' },
-                            { label: 'debug.setupval',          sig: 'debug.setupval(func, index, value)',          doc: 'Alias for debug.setupvalue. **Not Supported Function.**' },
-                            { label: 'debug.setconstant',       sig: 'debug.setconstant(func, index, value)',       doc: 'Replaces the constant at index in func\'s constant table. **Not Supported Function.**' },
-                            { label: 'debug.setvalue',          sig: 'debug.setvalue(func, index, value)',          doc: 'Alias for debug.setconstant. **Not Supported Function.**' },
-                            { label: 'setupvalue',              sig: 'setupvalue(func, index, value)',              doc: 'Alias for debug.setupvalue. **Not Supported Function.**' },
-                            { label: 'setupval',                sig: 'setupval(func, index, value)',                doc: 'Alias for debug.setupvalue. **Not Supported Function.**' },
-                            { label: 'setconstant',             sig: 'setconstant(func, index, value)',             doc: 'Alias for debug.setconstant. **Not Supported Function.**' },
-                            { label: 'setvalue',                sig: 'setvalue(func, index, value)',                doc: 'Alias for debug.setconstant. **Not Supported Function.**' },
                             // getproto / getprotos
                             { label: 'getproto',                sig: 'getproto(func, index, activated)',            doc: 'Returns the inner proto (sub-function) at index of func. **Not Supported Function.**' },
                             { label: 'getprotos',               sig: 'getprotos(func)',                             doc: 'Returns all inner protos of func as a table. **Not Supported Function.**' },
@@ -1482,8 +1481,16 @@
                 { label: 'debug.getstack',          sig: 'debug.getstack(level, index)',                doc: 'Returns the value at stack level and optional index.' },
                 { label: 'debug.getupvalue',        sig: 'debug.getupvalue(func, index)',               doc: 'Returns the upvalue at index in func. func must be an lclosure.' },
                 { label: 'debug.getupvalues',       sig: 'debug.getupvalues(func)',                     doc: 'Returns a table of all upvalues for func.' },
+                { label: 'debug.setupvalue',        sig: 'debug.setupvalue(func, index, value)',        doc: 'Sets the upvalue at index in func to value.' },
+                { label: 'debug.setupval',          sig: 'debug.setupval(func, index, value)',          doc: 'Alias for debug.setupvalue.' },
+                { label: 'debug.setconstant',       sig: 'debug.setconstant(func, index, value)',       doc: 'Replaces the constant at index in func\'s constant table. ' },
+                { label: 'debug.setvalue',          sig: 'debug.setvalue(func, index, value)',          doc: 'Alias for debug.setconstant.' },
                 { label: 'getupvalue',              sig: 'getupvalue(func, index)',                     doc: 'Alias for debug.getupvalue.' },
                 { label: 'getupvalues',             sig: 'getupvalues(func)',                           doc: 'Alias for debug.getupvalues.' },
+                { label: 'setupvalue',              sig: 'setupvalue(func, index, value)',              doc: 'Alias for debug.setupvalue.' },
+                { label: 'setupval',                sig: 'setupval(func, index, value)',                doc: 'Alias for debug.setupvalue.' },
+                { label: 'setconstant',             sig: 'setconstant(func, index, value)',             doc: 'Alias for debug.setconstant.' },
+                { label: 'setvalue',                sig: 'setvalue(func, index, value)',                doc: 'Alias for debug.setconstant.' },
                 { label: 'getstack',                sig: 'getstack(level, index)',                      doc: 'Alias for debug.getstack.' },
                 { label: 'crypt.base64encode',      sig: 'crypt.base64encode(str)',                     doc: 'Encodes str to Base64.' },
                 { label: 'crypt.base64decode',      sig: 'crypt.base64decode(str)',                     doc: 'Decodes a Base64 string.' },
@@ -1667,6 +1674,7 @@
                 { label: 'debug.dumpcodesize',  sig: 'debug.dumpcodesize(func)',               doc: 'Returns the native code size of func.' },
                 { label: 'debug.getregistry',   sig: 'debug.getregistry()',                    doc: 'Returns the Lua registry table.' },
                 { label: 'debug.getupvalue',    sig: 'debug.getupvalue(func, idx)',            doc: 'Returns the name and value of upvalue idx in func.' },
+                { label: 'debug.setupvalue',    sig: 'debug.setupvalue(func, idx, val)',       doc: 'Sets upvalue idx of func to val. Returns the upvalue name.' },
                 // ── buffer ──
                 { label: 'buffer.create',       sig: 'buffer.create(size)',                    doc: 'Creates a new buffer of size bytes, zeroed.' },
                 { label: 'buffer.fromstring',   sig: 'buffer.fromstring(s)',                   doc: 'Creates a buffer from the contents of string s.' },
@@ -1882,14 +1890,6 @@
                 { label: 'getconstant',         sig: 'getconstant(func, index)',                    doc: 'Returns the constant at index in func\'s constant table.' },
                 { label: 'getconstants',        sig: 'getconstants(func)',                          doc: 'Returns all constants from func\'s constant table.' },
                 { label: 'setconstants',        sig: 'setconstants(func, t)',                       doc: 'Replaces all constants in func from table t.'  },
-                { label: 'debug.setupvalue',    sig: 'debug.setupvalue(func, index, value)',        doc: 'Sets the upvalue at index in func to value.' },
-                { label: 'debug.setupval',      sig: 'debug.setupval(func, index, value)',          doc: 'Alias for debug.setupvalue.' },
-                { label: 'debug.setconstant',   sig: 'debug.setconstant(func, index, value)',       doc: 'Replaces the constant at index in func\'s constant table.' },
-                { label: 'debug.setvalue',      sig: 'debug.setvalue(func, index, value)',          doc: 'Alias for debug.setconstant.' },
-                { label: 'setupvalue',          sig: 'setupvalue(func, index, value)',              doc: 'Alias for debug.setupvalue.' },
-                { label: 'setupval',            sig: 'setupval(func, index, value)',                doc: 'Alias for debug.setupvalue.' },
-                { label: 'setconstant',         sig: 'setconstant(func, index, value)',             doc: 'Alias for debug.setconstant.' },
-                { label: 'setvalue',            sig: 'setvalue(func, index, value)',                doc: 'Alias for debug.setconstant.' },
                 { label: 'getproto',            sig: 'getproto(func, index, activated)',            doc: 'Returns the inner proto (sub-function) at index of func.' },
                 { label: 'getprotos',           sig: 'getprotos(func)',                             doc: 'Returns all inner protos of func.' },
                 { label: 'getinfo',             sig: 'getinfo(func)',                               doc: 'Returns debug info for func.' },
@@ -2047,18 +2047,190 @@
                 base: 'vs-dark',
                 inherit: true,
                 rules: [
-                    { token: 'string', foreground: '4facfe' },
-                    { token: 'string.lua', foreground: '4facfe' },
-                    { token: 'identifier', foreground: 'ffffff' },
-		    { token: 'number', foreground: 'ff4d4d' },
+                    // Base fallback
+                    { token: '',                                        foreground: 'C3CCDB' },
+                    // Variables
+                    { token: 'variable.language.self',              foreground: 'F7768E' },
+                    { token: 'variable.parameter.variadic',         foreground: 'F7768E' },
+                    { token: 'variable.parameter.function',         foreground: 'E0AF68' },
+                    { token: 'variable.other.constant',             foreground: 'FF9E64' },
+                    { token: 'variable.property',                   foreground: '7DCFFF' },
+                    { token: 'variable.object.property',            foreground: '73DACA' },
+                    // Keywords
+                    { token: 'keyword',                             foreground: 'BB9AF7' },
+                    { token: 'keyword.local',                       foreground: '997BD6', fontStyle: 'italic' },
+                    { token: 'keyword.operator',                    foreground: '89DDFF' },
+                    { token: 'keyword.operator.type.annotation',    foreground: '9ABDF5' },
+                    { token: 'keyword.operator.typedef.annotation', foreground: '89DDFF' },
+                    { token: 'keyword.control.export',              foreground: '997BD6', fontStyle: 'italic' },
+                    // Operators
+                    { token: 'operator',                            foreground: '89DDFF' },
+                    { token: 'operator.type',                       foreground: 'BB9AF7' },
+                    { token: 'operator.special',                    foreground: 'BB9AF7' },
+                    // Entities
+                    { token: 'entity.name.type.alias',              foreground: '5ab6d6' },
+                    { token: 'entity.name.function',                foreground: '7AA2F7' },
+                    { token: 'global',                              foreground: '7AA2F7' },
+                    // Storage
+                    { token: 'storage.type',                        foreground: 'BB9AF7' },
+                    // Comments
+                    { token: 'comment',                             foreground: '666666', fontStyle: 'italic' },
+                    { token: 'comment.highlight.title',             foreground: '89DDFF', fontStyle: 'italic' },
+                    { token: 'comment.highlight.name',              foreground: '89DDFF', fontStyle: 'italic' },
+                    { token: 'comment.delimiter.modifier',          foreground: '9ABDF5', fontStyle: 'italic' },
+                    { token: 'comment.highlight.modifier',          foreground: '7DCFFF', fontStyle: 'italic' },
+                    { token: 'comment.highlight.descriptor',        foreground: 'F7768E', fontStyle: 'italic' },
+                    // Delimiters
+                    { token: 'delimiter.longstring',                foreground: '89DDFF' },
+                    { token: 'delimiter.bracket',                   foreground: 'a6afbd' },
+                    { token: 'delimiter.array',                     foreground: 'a6afbd' },
+                    { token: 'delimiter.parenthesis',               foreground: 'a6afbd' },
+                    { token: 'delimiter',                           foreground: 'a6afbd' },
+                    // Strings
+                    { token: 'string',                              foreground: '9ECE6A' },
+                    { token: 'string.lua',                          foreground: '9ECE6A' },
+                    { token: 'longstring',                          foreground: '9ECE6A' },
+                    { token: 'string.delimeter',                    foreground: '89DDFF' },
+                    { token: 'string.escape',                       foreground: '89DDFF' },
+                    // Punctuation
+                    { token: 'punctuation.separator.arguments',     foreground: '9ABDF5' },
+                    { token: 'punctuation.separator.parameter',     foreground: '89DDFF' },
+                    { token: 'punctuation.separator.table',         foreground: '89DDFF' },
+                    { token: 'punctuation.definition.block',        foreground: '9ABDF5' },
+                    { token: 'punctuation.definition.parameters',   foreground: '9ABDF5' },
+                    { token: 'punctuation.definition.typeparameters', foreground: '89DDFF' },
+                    // Constants & numbers
+                    { token: 'constant.language',                   foreground: 'FF9E64' },
+                    { token: 'number',                              foreground: 'FF9E64' },
+                    { token: 'constants',                           foreground: 'FF9E64' },
+                    // Support
+                    { token: 'support.function',                    foreground: '0DB9D7' },
+                    { token: 'support.function.library',            foreground: '0DB9D7' },
+                    { token: 'support.type',                        foreground: '5ab6d6' },
+                    // Identifiers / fallback
+                    { token: 'identifier',                          foreground: 'C3CCDB' },
                 ],
                 colors: {
                     'editor.background': '#00000000',
+                    'editor.foreground': '#C3CCDB',
                     'editor.lineHighlightBackground': '#4facfe0a',
-                    'editorLineNumber.foreground': '#444444',
-                    'editorLineNumber.activeForeground': '#4facfe88',
+                    'editorLineNumber.foreground': '#7A7A7A',
+                    'editorLineNumber.activeForeground': '#BBBBBB',
                     'editorCursor.foreground': '#4facfe',
+                    'editorIndentGuide.background': '#1a1a1a',
+                    'editorSuggestWidget.background': '#181818',
+                    'editorSuggestWidget.border': '#1a1a1a',
+                    'editorSuggestWidget.foreground': '#D5D5D5',
+                    'editorSuggestWidget.selectedBackground': '#404040',
+                    'editorSuggestWidget.highlightForeground': '#18A0FB',
+                    'textCodeBlock.background': '#1B1B1B',
                     'minimap.background': '#00000000'
+                }
+            });
+
+            // ── Custom Lua Monarch tokenizer ──
+            // Overrides Monaco's built-in Lua so support.function, keyword, etc. all fire correctly.
+            monaco.languages.setMonarchTokensProvider('lua', {
+                keywords: [
+                    'and','break','do','else','elseif','end','false','for','function',
+                    'goto','if','in','local','nil','not','or','repeat','return','then',
+                    'true','until','while'
+                ],
+                supportFunctions: [
+                    // Standard Lua
+                    'print','warn','error','assert','pcall','xpcall','ipairs','pairs',
+                    'next','select','tonumber','tostring','type','unpack','rawget',
+                    'rawset','rawequal','rawlen','setmetatable','getmetatable',
+                    'require','load','loadstring','loadfile','dofile','collectgarbage',
+                    'gcinfo','newproxy',
+                    // Math
+                    'math.abs','math.ceil','math.floor','math.sqrt','math.max','math.min',
+                    'math.random','math.randomseed','math.huge','math.pi','math.pow',
+                    'math.fmod','math.modf','math.sin','math.cos','math.tan','math.asin',
+                    'math.acos','math.atan','math.atan2','math.exp','math.log','math.log10',
+                    // String
+                    'string.format','string.len','string.lower','string.upper','string.rep',
+                    'string.reverse','string.sub','string.byte','string.char','string.find',
+                    'string.gmatch','string.gsub','string.match','string.split',
+                    // Table
+                    'table.insert','table.remove','table.sort','table.concat','table.unpack',
+                    'table.move','table.create','table.find','table.clear','table.freeze',
+                    // Roblox / executor globals
+                    'game','workspace','script','shared','_G','Enum','Instance','Vector3',
+                    'CFrame','Color3','UDim','UDim2','TweenInfo','Ray','Region3',
+                    // Executor functions (common)
+                    'getgenv','getrenv','getsenv','getmenv','identifyexecutor','getexecutorname',
+                    'checkcaller','isourclosure','isexecutorclosure','checkclosure',
+                    'getthreadidentity','setthreadidentity','getidentity','setidentity',
+                    'islclosure','iscclosure','newlclosure','newcclosure','clonefunction',
+                    'hookfunction','getconnections','getgc','getreg','getregistry',
+                    'getinstances','getnilinstances','getscripts','getrunningscripts',
+                    'gethui','getcallingscript','cloneref','compareinstances',
+                    'fireclickdetector','fireproximityprompt','firetouchinterest',
+                    'loadstring','decompile','getscriptbytecode','dumpstring',
+                    'writefile','readfile','appendfile','isfile','isfolder','makefolder',
+                    'delfile','delfolder','listfiles','readdir','setclipboard','getclipboard',
+                    'request','http_request','HttpGet','HttpPost',
+                    'setreadonly','isreadonly','makereadonly','makewriteable',
+                    'filtergc','setfpscap','getfpscap',
+                    'task','coroutine','debug','bit32','utf8','os','buffer',
+                ],
+                builtinConstants: ['true','false','nil'],
+                operators: [
+                    '+','-','*','/','%','^','#','&','|','~','<<','>>','//',
+                    '==','~=','<=','>=','<','>','=',
+                    '(',')','{','}','[',']','::',';',':',',','.','..','...'
+                ],
+                tokenizer: {
+                    root: [
+                        // Long strings [[ ... ]]
+                        [/\[=*\[/, { token: 'longstring', next: '@longstring' }],
+                        // Long comments --[[ ... ]]
+                        [/--\[=*\[/, { token: 'comment', next: '@longcomment' }],
+                        // Line comment
+                        [/--.*$/, 'comment'],
+                        // Strings
+                        [/"([^"\\]|\\.)*$/, 'string'],
+                        [/'([^'\\]|\\.)*$/, 'string'],
+                        [/"/, 'string', '@string_double'],
+                        [/'/, 'string', '@string_single'],
+                        // Numbers
+                        [/0[xX][0-9a-fA-F]+/, 'number'],
+                        [/\d+\.?\d*([eE][+-]?\d+)?/, 'number'],
+                        // Keywords and identifiers
+                        [/[a-zA-Z_]\w*/, {
+                            cases: {
+                                '@keywords':         'keyword',
+                                '@builtinConstants': 'constant.language',
+                                '@supportFunctions': 'support.function',
+                                '@default':          'identifier'
+                            }
+                        }],
+                        // Operators & delimiters
+                        [/[{}()\[\]]/, 'delimiter'],
+                        [/[;,.]/, 'delimiter'],
+                        [/[+\-*\/%^#&|~<>=!]+/, 'operator'],
+                        // Whitespace
+                        [/\s+/, 'white'],
+                    ],
+                    string_double: [
+                        [/[^\\"]+/, 'string'],
+                        [/\\./, 'string.escape'],
+                        [/"/, 'string', '@pop'],
+                    ],
+                    string_single: [
+                        [/[^\\']+/, 'string'],
+                        [/\\./, 'string.escape'],
+                        [/'/, 'string', '@pop'],
+                    ],
+                    longstring: [
+                        [/\]=*\]/, 'longstring', '@pop'],
+                        [/./, 'longstring'],
+                    ],
+                    longcomment: [
+                        [/\]=*\]/, 'comment', '@pop'],
+                        [/./, 'comment'],
+                    ],
                 }
             });
 
