@@ -1157,6 +1157,7 @@
                             // top-level aliases also exposed directly on env
                             { label: 'getupvalue',         sig: 'getupvalue(func, index)',               doc: 'Alias for debug.getupvalue.' },
                             { label: 'getupvalues',        sig: 'getupvalues(func)',                     doc: 'Alias for debug.getupvalues.' },
+                            { label: 'getinfo',            sig: 'getinfo(func)',                         doc: 'Alias for debug.getinfo.' },
                             { label: 'setupvalue',         sig: 'setupvalue(func, index, value)',        doc: 'Alias for debug.setupvalue.' },
                             { label: 'setupval',           sig: 'setupval(func, index, value)',          doc: 'Alias for debug.setupvalue.' },
                             { label: 'setconstant',        sig: 'setconstant(func, index, value)',       doc: 'Alias for debug.setconstant.' },
@@ -1291,7 +1292,6 @@
                             { label: 'getproto',                sig: 'getproto(func, index, activated)',            doc: 'Returns the inner proto (sub-function) at index of func. **Not Supported Function.**' },
                             { label: 'getprotos',               sig: 'getprotos(func)',                             doc: 'Returns all inner protos of func as a table. **Not Supported Function.**' },
                             // getinfo / stack manipulation
-                            { label: 'getinfo',                 sig: 'getinfo(func)',                               doc: 'Returns debug info table for func (alias of debug.getinfo in some executors). **Not Supported Function.**' },
                             { label: 'getlocal',                sig: 'getlocal(level, index)',                      doc: 'Returns the local variable name and value at level and index. **Not Supported Function.**' },
                             { label: 'getlocals',               sig: 'getlocals(level)',                            doc: 'Returns all locals at the given stack level as a table. **Not Supported Function.**' },
                             { label: 'setlocal',                sig: 'setlocal(level, index, value)',               doc: 'Sets a local variable at the given stack level. **Not Supported Function.**' },
@@ -1486,6 +1486,7 @@
                 { label: 'cansignalreplicate',      sig: 'cansignalreplicate(signal)',                  doc: 'Returns true if the signal belongs to a replicating remote.' },
                 { label: 'getactors',               sig: 'getactors()',                                 doc: 'Returns a table of all Actor instances found across common services.' },
                 { label: 'debug.getinfo',           sig: 'debug.getinfo(func, what)',                   doc: 'Returns a table of debug info about func.' },
+                { label: 'getinfo',                 sig: 'getinfo(func)',                               doc: 'Alias for debug.getinfo.' },
                 { label: 'debug.getstack',          sig: 'debug.getstack(level, index)',                doc: 'Returns the value at stack level and optional index.' },
                 { label: 'debug.getupvalue',        sig: 'debug.getupvalue(func, index)',               doc: 'Returns the upvalue at index in func. func must be an lclosure.' },
                 { label: 'debug.getupvalues',       sig: 'debug.getupvalues(func)',                     doc: 'Returns a table of all upvalues for func.' },
@@ -1904,7 +1905,6 @@
                 { label: 'setconstants',        sig: 'setconstants(func, t)',                       doc: 'Replaces all constants in func from table t.'  },
                 { label: 'getproto',            sig: 'getproto(func, index, activated)',            doc: 'Returns the inner proto (sub-function) at index of func.' },
                 { label: 'getprotos',           sig: 'getprotos(func)',                             doc: 'Returns all inner protos of func.' },
-                { label: 'getinfo',             sig: 'getinfo(func)',                               doc: 'Returns debug info for func.' },
                 { label: 'getlocal',            sig: 'getlocal(level, index)',                      doc: 'Returns the local variable at level/index.' },
                 { label: 'getlocals',           sig: 'getlocals(level)',                            doc: 'Returns all locals at the given stack level.' },
                 { label: 'setlocal',            sig: 'setlocal(level, index, value)',               doc: 'Sets a local variable at the given stack level.' },
@@ -2763,5 +2763,3 @@
     </script>
 </body>
 </html>
-
-
