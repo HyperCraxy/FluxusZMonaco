@@ -559,7 +559,7 @@
         };
 
         const stored = loadFromStorage();
-        let tabs = stored ? stored.tabs : [{ id: 'tab-1', name: 'Tab', content: '--FluxusZ' }];
+        let tabs = stored ? stored.tabs : [{ id: 'tab-1', name: 'Tab', content: '--Arch' }];
         let activeTabId = stored ? stored.activeTabId : 'tab-1';
 
         if (!tabs.find(t => t.id === activeTabId)) activeTabId = tabs[0].id;
