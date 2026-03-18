@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Argon</title>
+    <title>Astralise</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
     <style>
         :root {
@@ -37,81 +37,62 @@
         .tabs-bar {
             display: flex;
             align-items: center;
-            gap: 0;
             background: #151515;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 0 8px 0 8px;
-            height: 36px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 0 6px;
+            height: 38px;
             flex-shrink: 0;
         }
-
         .tabs-container {
             display: flex;
-            gap: 2px;
+            gap: 0;
             overflow-x: auto;
+            overflow-y: visible;
             height: 100%;
             align-items: center;
+            width: 100%;
         }
-
-        .tabs-container::-webkit-scrollbar { height: 0px; }
+        .tabs-container::-webkit-scrollbar { height: 0; }
         .tabs-container { scroll-behavior: smooth; }
-
         .tab-item {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 0 10px 0 8px;
-            height: 28px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid transparent;
+            gap: 0;
+            padding: 0 0 0 8px;
+            height: 32px;
+            background: #151515;
+            border: 1.4px solid #151515;
             border-radius: 6px;
-            font-size: 11.5px;
-            letter-spacing: 0.01em;
-            color: rgba(255,255,255,0.38);
+            font-size: 12px;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            font-weight: 500;
+            letter-spacing: 0;
+            color: #e8e8e8;
             cursor: pointer;
-            transition: background 0.15s, color 0.15s, border-color 0.15s;
             white-space: nowrap;
             min-width: 0;
             max-width: 180px;
             user-select: none;
             position: relative;
+            margin-right: 5px;
+            transform-origin: center;
+            /* JS Web Animations drives scale/bg/border — no CSS transition here */
+            opacity: 0.55;
         }
-
         .tab-item.drag-over-left  { border-left:  2px solid #888 !important; }
         .tab-item.drag-over-right { border-right: 2px solid #888 !important; }
         .tab-item.dragging        { opacity: 0.35; cursor: grabbing; }
-
         .tab-item:hover {
-            background: rgba(255,255,255,0.06);
-            color: rgba(255,255,255,0.7);
-            border-color: rgba(255,255,255,0.1);
+            opacity: 0.8;
         }
-
-        .tab-item.active {
-            background: #2f2f2f;
-            border-color: rgba(255,255,255,0.12);
-            color: #e8e8e8;
-            font-weight: 500;
-            box-shadow: none;
-        }
-
-        .tab-item.active .tab-file-icon {
-            color: #c8c8c8;
-            opacity: 1;
-        }
-
+        .tab-item.active .tab-file-icon { opacity: 1; }
         .tab-file-icon {
             display: flex;
             align-items: center;
             flex-shrink: 0;
-            opacity: 0.4;
-            transition: opacity 0.15s, color 0.15s;
+            margin-right: 5px;
+            opacity: 1;
         }
-
-        .tab-item:hover .tab-file-icon {
-            opacity: 0.7;
-        }
-
         .tab-name {
             outline: none;
             background: transparent;
@@ -121,64 +102,61 @@
             font: inherit;
             padding: 0;
             min-width: 20px;
-            max-width: 110px;
+            max-width: 120px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
             cursor: pointer;
         }
-
         .tab-name.editing {
             border-bottom-color: #888;
             cursor: text;
             color: #fff;
             text-overflow: clip;
         }
-
+        /* close (RemoveTab): bg #151515, corner-radius 4, icon #909090 rest, #fff+#292929 hover */
         .tab-close {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 14px;
-            height: 14px;
-            border-radius: 3px;
-            opacity: 0;
+            width: 19px;
+            height: 19px;
+            border-radius: 4px;
+            background: #151515;
             flex-shrink: 0;
-            transition: opacity 0.15s, background 0.15s, color 0.15s;
-            margin-left: 1px;
-            color: rgba(255,255,255,0.5);
-        }
-
-        .tab-item:hover .tab-close,
-        .tab-item.active .tab-close {
-            opacity: 0.5;
-        }
-
-        .tab-close:hover {
-            opacity: 1 !important;
-            background: rgba(255,255,255,0.1);
-            color: #c8c8c8;
-        }
-
-        .add-tab-btn {
-            background: transparent;
-            border: none;
-            color: rgba(255,255,255,0.3);
+            margin: 0 5px;
             cursor: pointer;
-            width: 24px;
-            height: 24px;
-            border-radius: 5px;
+            transition: background 0.12s;
+            color: #909090;
+            opacity: 0;
+        }
+        .tab-item:hover .tab-close,
+        .tab-item.active .tab-close { opacity: 1; }
+        .tab-close:hover {
+            background: #292929 !important;
+            color: #ffffff;
+        }
+        .tab-item.active .tab-close { background: #232323; }
+        /* add button: bg #151515, corner-radius 4, icon #909090, hover #fff+#1f1f1f */
+        .add-tab-btn {
+            background: #151515;
+            border: none;
+            color: #909090;
+            cursor: pointer;
+            width: 26px;
+            height: 26px;
+            border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.15s;
+            transition: background 0.12s, color 0.12s;
             flex-shrink: 0;
-            margin-left: 4px;
+            margin-left: 2px;
+            padding: 0;
         }
-
         .add-tab-btn:hover {
-            background: rgba(255,255,255,0.08);
-            color: #c8c8c8;
+            background: #1f1f1f;
+            color: #ffffff;
         }
 
         #monaco-editor { flex: 1; width: 100%; min-height: 0; }
@@ -324,12 +302,6 @@
     <div class="editor-shell">
         <div class="tabs-bar" id="tabs-bar">
             <div class="tabs-container" id="tabs-container"></div>
-            <button class="add-tab-btn" id="add-tab-btn" title="New Tab">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-            </button>
         </div>
         <div id="monaco-editor"></div>
     </div>
@@ -344,7 +316,7 @@
             }
         }, true);
 
-        const STORAGE_KEY = 'Argon_tabs';
+        const STORAGE_KEY = 'Astralise_tabs';
 
         const persist = () => {
             try {
@@ -364,7 +336,7 @@
         };
 
         const stored = loadFromStorage();
-        let tabs = stored ? stored.tabs : [{ id: 'tab-1', name: 'Tab', content: '--Argon' }];
+        let tabs = stored ? stored.tabs : [{ id: 'tab-1', name: 'Tab', content: '--FluxusZ' }];
         let activeTabId = stored ? stored.activeTabId : 'tab-1';
 
         if (!tabs.find(t => t.id === activeTabId)) activeTabId = tabs[0].id;
@@ -411,10 +383,24 @@
             tabs.forEach(tab => {
                 const tabEl = document.createElement('div');
                 tabEl.className = `tab-item ${tab.id === activeTabId ? 'active' : ''}`;
+                tabEl.dataset.id = tab.id;
+
+                // Apply correct resting state immediately (no animation on initial render)
+                if (tab.id === activeTabId) {
+                    tabEl.style.background   = '#232323';
+                    tabEl.style.borderColor  = '#2f2f2f';
+                    tabEl.style.transform    = 'scale(1)';
+                    tabEl.style.opacity      = '1';
+                } else {
+                    tabEl.style.background   = '#151515';
+                    tabEl.style.borderColor  = '#151515';
+                    tabEl.style.transform    = 'scale(0.9)';
+                    tabEl.style.opacity      = '0.55';
+                }
 
                 const iconEl = document.createElement('span');
                 iconEl.className = 'tab-file-icon';
-                iconEl.innerHTML = `<svg width="9" height="9" viewBox="0 0 9 9" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M7.375 0C7.80598 0 8.2193 0.171205 8.52405 0.475951C8.8288 0.780698 9 1.19402 9 1.625V5H6.625C6.19402 5 5.7807 5.17121 5.47595 5.47595C5.17121 5.7807 5 6.19402 5 6.625V9H1.625C1.19402 9 0.780698 8.8288 0.475951 8.52405C0.171205 8.2193 0 7.80598 0 7.375V1.625C0 1.19402 0.171205 0.780698 0.475951 0.475951C0.780698 0.171205 1.19402 0 1.625 0H7.375ZM8.78 5.75L5.75 8.78V6.625C5.75 6.142 6.142 5.75 6.625 5.75H8.78Z"/></svg>`;
+                iconEl.innerHTML = `<svg width="9" height="9" viewBox="0 0 9 9" fill="#e8e8e8" xmlns="http://www.w3.org/2000/svg"><path d="M7.375,0 C7.80598,0 8.2193,0.171205 8.52405,0.475951 C8.8288,0.780698 9,1.19402 9,1.625 L9,5 L6.625,5 C6.19402,5 5.7807,5.17121 5.47595,5.47595 C5.17121,5.7807 5,6.19402 5,6.625 L5,9 L1.625,9 C1.19402,9 0.780698,8.8288 0.475951,8.52405 C0.171205,8.2193 0,7.80598 0,7.375 L0,1.625 C0,1.19402 0.171205,0.780698 0.475951,0.475951 C0.780698,0.171205 1.19402,0 1.625,0 L7.375,0 M8.78,5.75 L5.75,8.78 L5.75,6.625 C5.75,6.142 6.142,5.75 6.625,5.75 L8.78,5.75"/></svg>`;
 
                 const nameEl = document.createElement('span');
                 nameEl.className = 'tab-name';
@@ -431,12 +417,7 @@
                 const closeEl = document.createElement('div');
                 closeEl.className = 'tab-close';
                 closeEl.title = 'Close tab';
-                closeEl.innerHTML = `
-                    <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="4">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                `;
+                closeEl.innerHTML = `<svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor"><path d="M5.47,5.47 A0.75,0.75 0 0 1 6.53,5.47L12,10.94 L17.47,5.47 A0.75,0.75 1 1 1 18.53,6.53L13.06,12 L18.53,17.47 A0.75,0.75 1 1 1 17.47,18.53L12,13.06 L6.53,18.53 A0.75,0.75 0 0 1 5.47,17.47L10.94,12 L5.47,6.53 A0.75,0.75 0 0 1 5.47,5.47"/></svg>`;
 
                 tabEl.appendChild(iconEl);
                 tabEl.appendChild(nameEl);
@@ -503,6 +484,62 @@
 
                 container.appendChild(tabEl);
             });
+
+            // Add button always lives right after the last tab inside the container
+            const addBtn = document.createElement('button');
+            addBtn.className = 'add-tab-btn';
+            addBtn.id = 'add-tab-btn';
+            addBtn.title = 'New Tab';
+            addBtn.innerHTML = `<svg width="10.6" height="10.6" viewBox="0 0 24 24" fill="currentColor"><path d="M12,3.75 A0.75,0.75 0 0 1 12.75,4.5L12.75,11.25 L19.5,11.25 A0.75,0.75 0 0 1 19.5,12.75L12.75,12.75 L12.75,19.5 A0.75,0.75 0 0 1 11.25,19.5L11.25,12.75 L4.5,12.75 A0.75,0.75 0 0 1 4.5,11.25L11.25,11.25 L11.25,4.5 A0.75,0.75 0 0 1 12,3.75"/></svg>`;
+            addBtn.addEventListener('click', (e) => { e.stopPropagation(); addTab(); });
+            container.appendChild(addBtn);
+        };
+
+        // ── XAML animation curves ──────────────────────────────────────────────
+        // QuadraticEase EaseOut  (Selected / Unselected): t => t*(2-t)
+        // QuadraticEase EaseIn   (Closing):               t => t*t
+        // WA API easing strings for these:
+        const EASE_OUT_QUAD = 'cubic-bezier(0.25, 0, 0.5, 1)'; // ≈ quadratic ease-out
+        const EASE_IN_QUAD  = 'cubic-bezier(0.5, 0, 1, 1)';    // ≈ quadratic ease-in
+
+        // Run the XAML "Selected" storyboard on a tab element:
+        //   bg #151515 → #232323, border #151515 → #2f2f2f, scale 0.9 → 1, opacity → 1
+        //   Duration 0:0:0.2, QuadraticEase EaseOut
+        const animateSelected = (el) => {
+            el.animate(
+                [
+                    { background: '#151515', borderColor: '#151515', transform: 'scale(0.9)', opacity: '0.55' },
+                    { background: '#232323', borderColor: '#2f2f2f', transform: 'scale(1)',   opacity: '1'    }
+                ],
+                { duration: 200, easing: EASE_OUT_QUAD, fill: 'forwards' }
+            );
+        };
+
+        // Run the XAML "Unselected" storyboard on a tab element:
+        //   bg #232323 → #151515, border #2f2f2f → #151515, scale 1 → 0.9, opacity → 0.55
+        //   Duration 0:0:0.2, QuadraticEase EaseOut
+        const animateUnselected = (el) => {
+            el.animate(
+                [
+                    { background: '#232323', borderColor: '#2f2f2f', transform: 'scale(1)',   opacity: '1'    },
+                    { background: '#151515', borderColor: '#151515', transform: 'scale(0.9)', opacity: '0.55' }
+                ],
+                { duration: 200, easing: EASE_OUT_QUAD, fill: 'forwards' }
+            );
+        };
+
+        // Run the XAML "Closing" storyboard on a tab element, then call onDone:
+        //   opacity 1 → 0, scale → 0
+        //   Duration 0:0:0.3, QuadraticEase EaseIn
+        const animateClosing = (el, onDone) => {
+            const anim = el.animate(
+                [
+                    { opacity: '1', transform: 'scale(1)' },
+                    { opacity: '0', transform: 'scale(0)' }
+                ],
+                { duration: 300, easing: EASE_IN_QUAD, fill: 'forwards' }
+            );
+            anim.onfinish = onDone;
         };
 
         const switchTab = (id) => {
@@ -511,28 +548,54 @@
             const currentTab = tabs.find(t => t.id === activeTabId);
             if (currentTab && window.editor) currentTab.content = window.editor.getValue();
 
+            // Animate the previously-active tab out (Unselected storyboard)
+            const prevEl = document.querySelector(`.tab-item[data-id="${activeTabId}"]`);
+            if (prevEl) animateUnselected(prevEl);
+
             activeTabId = id;
             const newTab = tabs.find(t => t.id === id);
             if (newTab && window.editor) window.editor.setValue(newTab.content);
 
+            // Animate the newly-active tab in (Selected storyboard)
+            const nextEl = document.querySelector(`.tab-item[data-id="${id}"]`);
+            if (nextEl) {
+                nextEl.classList.add('active');
+                animateSelected(nextEl);
+            }
+
+            // Update active class without full re-render so animations aren't interrupted
+            document.querySelectorAll('.tab-item').forEach(el => {
+                if (el.dataset.id !== id) el.classList.remove('active');
+            });
+
             persist();
-            updateTabsUI();
         };
 
         const closeTab = (id) => {
             if (tabs.length === 1) return;
 
-            const index = tabs.findIndex(t => t.id === id);
-            tabs = tabs.filter(t => t.id !== id);
+            const tabEl = document.querySelector(`.tab-item[data-id="${id}"]`);
 
-            if (activeTabId === id) {
-                const nextTab = tabs[index] || tabs[index - 1];
-                activeTabId = nextTab.id;
-                if (window.editor) window.editor.setValue(nextTab.content);
+            const doRemove = () => {
+                const index = tabs.findIndex(t => t.id === id);
+                tabs = tabs.filter(t => t.id !== id);
+
+                if (activeTabId === id) {
+                    const nextTab = tabs[index] || tabs[index - 1];
+                    activeTabId = nextTab.id;
+                    if (window.editor) window.editor.setValue(nextTab.content);
+                }
+
+                persist();
+                updateTabsUI();
+            };
+
+            if (tabEl) {
+                // Run Closing storyboard then remove
+                animateClosing(tabEl, doRemove);
+            } else {
+                doRemove();
             }
-
-            persist();
-            updateTabsUI();
         };
 
         // ── Notification system ──
@@ -739,14 +802,21 @@
             const id = `tab-${Date.now()}`;
             const name = `Tab ${tabs.length + 1}`;
             tabs.push({ id, name, content: '' });
-            switchTab(id);
+            activeTabId = id;
+            persist();
+            updateTabsUI();
+            // Play the XAML "Selected" scale-in animation on the new tab
+            const newEl = document.querySelector(`.tab-item[data-id="${id}"]`);
+            if (newEl) {
+                newEl.style.background  = '#151515';
+                newEl.style.borderColor = '#151515';
+                newEl.style.transform   = 'scale(0.9)';
+                newEl.style.opacity     = '0.55';
+                animateSelected(newEl);
+            }
+            if (window.editor) window.editor.setValue('');
             notify(`Created "${name}"`, 'tab');
         };
-
-        document.getElementById('add-tab-btn').addEventListener('click', (e) => {
-            e.stopPropagation();
-            addTab();
-        });
 
         document.getElementById('tabs-container')?.addEventListener('wheel', (e) => {
             if (e.deltaY !== 0) {
@@ -771,7 +841,7 @@
                         ...['game', 'workspace', 'script', 'shared', '_G', 'Enum', 'Instance', 'Vector3', 'CFrame', 'Color3', 'Rect', 'UDim', 'UDim2', 'Ray', 'Region3', 'TweenInfo'].map(g => ({
                             label: g, kind: monaco.languages.CompletionItemKind.Class, insertText: g
                         })),
-                        // Argon env functions from Init.lua
+                        // Fluxusz env functions from Init.lua
                         ...[
                             // Identity / executor info
                             { label: 'identifyexecutor',    sig: 'identifyexecutor()',              doc: 'Returns the executor name and version string.' },
@@ -875,7 +945,7 @@
                             { label: 'toclipboard',         sig: 'toclipboard(text)',               doc: 'Alias for setclipboard(text).' },
                             { label: 'getclipboard',        sig: 'getclipboard()',                  doc: 'Returns the current system clipboard text.' },
                             // Console
-                            { label: 'consolecreate',       sig: 'consolecreate(title)',            doc: 'Opens the Argon console window with an optional title.' },
+                            { label: 'consolecreate',       sig: 'consolecreate(title)',            doc: 'Opens the Fluxusz console window with an optional title.' },
                             { label: 'rconsolecreate',      sig: 'rconsolecreate(title)',           doc: 'Alias for consolecreate(title).' },
                             { label: 'consoledestroy',      sig: 'consoledestroy()',                doc: 'Closes/destroys the console window.' },
                             { label: 'rconsoledestroy',     sig: 'rconsoledestroy()',               doc: 'Alias for consoledestroy().' },
@@ -1051,7 +1121,7 @@
                         { label: 'Drawing',
                           kind: monaco.languages.CompletionItemKind.Class,
                           insertText: 'Drawing',
-                          documentation: { value: 'The Drawing library loaded by Argon at runtime.' },
+                          documentation: { value: 'The Drawing library loaded by Fluxusz at runtime.' },
                           detail: 'Drawing' },
                         ...[
                             { label: 'cleardrawcache',      sig: 'cleardrawcache()',                    doc: 'Clears the internal drawing object cache.' },
@@ -1078,7 +1148,7 @@
                         { label: 'tween', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'game:GetService("TweenService"):Create(${1:object}, TweenInfo.new(${2:1}), {${3:Property} = ${4:Value}}):Play()', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Create and play a tween' },
                         { label: 'raycast', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'local params = RaycastParams.new()\nparams.FilterType = Enum.RaycastFilterType.Blacklist\nparams.FilterDescendantsInstances = {${1:table}}\n\nlocal result = workspace:Raycast(${2:origin}, ${3:direction}, params)\nif result then\n\t$0\nend', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Roblox Raycast setup' },
 
-                        // ── Unsupported executor functions (not in Argon) ──
+                        // ── Unsupported executor functions (not in FluxusZ) ──
                         // These are common UNC/executor functions from other executors.
                         // Shown with deprecated tag (strikethrough) and a red ⛔ detail to signal they are NOT supported.
                         ...[
@@ -1114,7 +1184,7 @@
                             { label: 'setfflag',                sig: 'setfflag(flag, value)',                       doc: 'Sets a Roblox FFlag before the engine reads it. **Not Supported Function.**' },
                             // getfflag
                             { label: 'getfflag',                sig: 'getfflag(flag)',                              doc: 'Returns the current value of a Roblox FFlag. **Not Supported Function.**' },
-                            // input simulation (not in Argon)
+                            // input simulation (not in FluxusZ)
                             { label: 'simulateclick',           sig: 'simulateclick(x, y)',                         doc: 'Simulates a mouse click at screen coordinates. **Not Supported Function.**' },
                             // getnamecallmethod / setnamecallmethod
                             { label: 'getnamecallmethod',       sig: 'getnamecallmethod()',                         doc: 'Returns the current namecall method string inside a __namecall hook. **Not Supported Function.**' },
@@ -1228,7 +1298,7 @@
                 { label: 'setrbxclipboard',         sig: 'setrbxclipboard(text)',                       doc: 'Alias for setclipboard(text).' },
                 { label: 'toclipboard',             sig: 'toclipboard(text)',                           doc: 'Alias for setclipboard(text).' },
                 { label: 'getclipboard',            sig: 'getclipboard()',                              doc: 'Returns the current system clipboard text.' },
-                { label: 'consolecreate',           sig: 'consolecreate(title)',                        doc: 'Opens the Argon console window with an optional title.' },
+                { label: 'consolecreate',           sig: 'consolecreate(title)',                        doc: 'Opens the Fluxusz console window with an optional title.' },
                 { label: 'rconsolecreate',          sig: 'rconsolecreate(title)',                       doc: 'Alias for consolecreate(title).' },
                 { label: 'consoledestroy',          sig: 'consoledestroy()',                            doc: 'Closes/destroys the console window.' },
                 { label: 'rconsoledestroy',         sig: 'rconsoledestroy()',                           doc: 'Alias for consoledestroy().' },
@@ -1286,7 +1356,7 @@
                 { label: 'clearqueueonteleport',    sig: 'clearqueueonteleport(enabled)',               doc: 'Enables or disables clearing the teleport queue. Pass a boolean.' },
                 { label: 'clearteleportqueue',      sig: 'clearteleportqueue(enabled)',                 doc: 'Alias for clearqueueonteleport.' },
                 { label: 'clear_teleport_queue',    sig: 'clear_teleport_queue(enabled)',               doc: 'Alias for clearqueueonteleport.' },
-                { label: 'ArgonExec',             sig: 'ArgonExec(code)',                           doc: 'Compiles and executes a Lua code string in the Argon executor environment.' },
+                { label: 'FluxusZExec',             sig: 'FluxusZExec(code)',                           doc: 'Compiles and executes a Lua code string in the Fluxusz executor environment.' },
                 { label: 'getsignalarguments',      sig: 'getsignalarguments(signal)',                  doc: 'Returns a table of argument type strings for the given RBXScriptSignal.' },
                 { label: 'cansignalreplicate',      sig: 'cansignalreplicate(signal)',                  doc: 'Returns true if the signal belongs to a replicating remote.' },
                 { label: 'getactors',               sig: 'getactors()',                                 doc: 'Returns a table of all Actor instances found across common services.' },
@@ -1857,7 +1927,7 @@
                 }
             });
 
-            monaco.editor.defineTheme('Argon-theme', {
+            monaco.editor.defineTheme('Astralise-theme', {
                 base: 'vs-dark',
                 inherit: true,
                 rules: [
@@ -2011,7 +2081,7 @@
                     'getupvalue','getupvalues','getstack',
                     'getreg','getregistry','getgc','filtergc',
                     'cleardrawcache','getrenderproperty','setrenderproperty','isrenderobj',
-                    'ArgonExec',
+                    'FluxusZExec',
                     'task','coroutine','debug','bit32','utf8','os','buffer','crypt','cache',
                 ],
                 builtinConstants: ['true','false','nil'],
@@ -2078,7 +2148,7 @@
             window.editor = monaco.editor.create(document.getElementById('monaco-editor'), {
                 value: activeTab.content,
                 language: 'lua',
-                theme: 'Argon-theme',
+                theme: 'Astralise-theme',
                 automaticLayout: true,
                 fontSize: 11,
                 fontFamily: "'Fira Code', monospace",
@@ -2116,7 +2186,7 @@
             });
 
             // ── Editor Settings: persist & restore ──
-            const SETTINGS_KEY = 'Argon_settings';
+            const SETTINGS_KEY = 'Astralise_settings';
             const saveSettings = (patch) => {
                 try {
                     const current = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
