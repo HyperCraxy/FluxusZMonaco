@@ -43,7 +43,7 @@
             background: var(--tab-bg-primary);
             border-bottom: 1px solid rgba(255,255,255,0.05);
             padding: 0 6px;
-            height: 34px;
+            height: 35px;
             flex-shrink: 0;
         }
         .tabs-container {
@@ -59,7 +59,7 @@
         .tabs-container { scroll-behavior: smooth; }
         .tab-item {
             display: inline-flex;
-            align-items: top;
+            align-items: center;
             gap: 0;
             padding: 0 0 0 8px;
             height: 32px;
@@ -78,6 +78,7 @@
             user-select: none;
             position: relative;
             margin-right: 5px;
+            margin-bottom: 3px;
             transform-origin: center;
             /* JS Web Animations drives scale/bg/border — no CSS transition here */
             opacity: 0.55;
