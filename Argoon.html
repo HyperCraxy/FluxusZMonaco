@@ -377,7 +377,7 @@
         };
 
         const stored = loadFromStorage();
-        let tabs = stored ? stored.tabs : [{ id: 'tab-1', name: 'Untitled Tab #1', content: '--Argon' }];
+        let tabs = stored ? stored.tabs : [{ id: 'tab-1', name: 'Untitled #1', content: '--Argon' }];
         let activeTabId = stored ? stored.activeTabId : 'tab-1';
 
         if (!tabs.find(t => t.id === activeTabId)) activeTabId = tabs[0].id;
@@ -831,7 +831,7 @@
 
         const addTab = () => {
             const id = `tab-${Date.now()}`;
-            const name = `Untitled Tab #${tabs.length + 1}`;
+            const name = `Untitled #${tabs.length + 1}`;
             tabs.push({ id, name, content: '' });
             activeTabId = id;
             persist();
